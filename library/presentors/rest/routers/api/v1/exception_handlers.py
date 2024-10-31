@@ -3,7 +3,11 @@ from http import HTTPStatus
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from library.application.exceptions import EntityNotFoundException, LibraryException
+from library.application.exceptions import (
+    EmptyPayloadException,
+    EntityNotFoundException,
+    LibraryException,
+)
 from library.presentors.rest.routers.api.v1.schemas.common import StatusResponseSchema
 
 
@@ -20,6 +24,16 @@ async def entity_not_found_exception_handler(
 ) -> JSONResponse:
     return exception_json_response(
         status_code=HTTPStatus.NOT_FOUND,
+        message=exc.message,
+    )
+
+
+async def empty_payload_exception_handler(
+    request: Request,
+    exc: EmptyPayloadException,
+) -> JSONResponse:
+    return exception_json_response(
+        status_code=HTTPStatus.BAD_REQUEST,
         message=exc.message,
     )
 

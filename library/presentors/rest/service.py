@@ -8,11 +8,16 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from library.adapters.database.di import DatabaseProvider
-from library.application.exceptions import EntityNotFoundException, LibraryException
+from library.application.exceptions import (
+    EmptyPayloadException,
+    EntityNotFoundException,
+    LibraryException,
+)
 from library.domains.di import DomainProvider
 from library.presentors.rest.config import RestConfig
 from library.presentors.rest.routers.api.router import router as api_router
-from library.presentors.rest.routers.api.v1.handlers import (
+from library.presentors.rest.routers.api.v1.exception_handlers import (
+    empty_payload_exception_handler,
     entity_not_found_exception_handler,
     http_exception_handler,
     library_exception_handler,
@@ -35,6 +40,7 @@ class RestService(UvicornService):
         (HTTPException, http_exception_handler),
         (LibraryException, library_exception_handler),
         (EntityNotFoundException, entity_not_found_exception_handler),
+        (EmptyPayloadException, empty_payload_exception_handler),
     )
 
     async def create_application(self) -> UvicornApplication:
@@ -46,6 +52,15 @@ class RestService(UvicornService):
             openapi_url="/docs/openapi.json",
             docs_url="/docs/swagger",
             redoc_url="/docs/redoc",
+            license_info={
+                "name": "GNU 3.0",
+                "url": "https://www.gnu.org/licenses/gpl-3.0.html",
+            },
+            contact={
+                "name": "Sergey Natalenko",
+                "url": "https://github.com/andy-takker",
+                "email": "sergey.natalenko@mail.ru",
+            },
         )
 
         self.set_middlewares(app=app)

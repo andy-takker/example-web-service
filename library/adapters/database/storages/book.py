@@ -1,10 +1,17 @@
 from collections.abc import Sequence
+from datetime import UTC, datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from library.adapters.database.tables import BookTable
-from library.domains.entities.book import Book, BookId, BookPaginationParams
+from library.domains.entities.book import (
+    Book,
+    BookId,
+    BookPaginationParams,
+    CreateBook,
+    UpdateBook,
+)
 from library.domains.interfaces.storages.book import IBookStorage
 
 
@@ -58,3 +65,49 @@ class BookStorage(IBookStorage):
             )
             for book in result
         ]
+
+    async def create_book(self, *, book: CreateBook) -> Book:
+        stmt = (
+            insert(BookTable)
+            .values(
+                title=book.title,
+                year=book.year,
+                author=book.author,
+            )
+            .returning(BookTable)
+        )
+        result = (await self.session.execute(stmt)).mappings().one()
+
+        return Book(
+            id=BookId(result["id"]),
+            title=result["title"],
+            year=result["year"],
+            author=result["author"],
+            created_at=result["created_at"],
+            updated_at=result["updated_at"],
+        )
+
+    async def delete_book_by_id(self, *, book_id: BookId) -> None:
+        stmt = (
+            update(BookTable)
+            .where(BookTable.id == book_id)
+            .values(deleted_at=datetime.now(tz=UTC))
+        )
+        await self.session.execute(stmt)
+
+    async def update_book_by_id(self, *, update_book: UpdateBook) -> Book:
+        stmt = (
+            update(BookTable)
+            .where(BookTable.id == update_book.book_id)
+            .values(**update_book.to_dict())
+            .returning(BookTable)
+        )
+        result = (await self.session.execute(stmt)).mappings().one()
+        return Book(
+            id=BookId(result["id"]),
+            title=result["title"],
+            year=result["year"],
+            author=result["author"],
+            created_at=result["created_at"],
+            updated_at=result["updated_at"],
+        )

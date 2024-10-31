@@ -6,9 +6,11 @@ from aiomisc_log import LogFormat, LogLevel
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class AppConfig:
-    title: str = field(default_factory=lambda: environ.get("APP_TITLE", "Application"))
+    title: str = field(default_factory=lambda: environ.get("APP_TITLE", "Library"))
     description: str = field(
-        default_factory=lambda: environ.get("APP_DESCRIPTION", "Application")
+        default_factory=lambda: environ.get(
+            "APP_DESCRIPTION", "Web application for library"
+        )
     )
     version: str = field(default_factory=lambda: environ.get("APP_VERSION", "1.0.0"))
     pool_size: int = field(
