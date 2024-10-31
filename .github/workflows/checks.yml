@@ -27,3 +27,37 @@ jobs:
 
       - name: Run lint
         run: make lint-ci
+
+  testing:
+    runs-on: ubuntu-22.04
+    container: python:3.12-slim
+    needs: checking
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          TZ: UTC
+          POSTGRES_USER: testuser
+          POSTGRES_DB: testdb
+          POSTGRES_PASSWORD: testpass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: make develop-ci
+
+      - name: Run tests
+        run: make test-ci
+        env:
+          APP_DB_DSN: postgresql+asyncpg://testuser:testpass@postgres:5432/testdb
