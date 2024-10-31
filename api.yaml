@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Библиотека
   description: Простой сервис библиотеки
-  contact: 
+  contact:
     email: sergey.natalenko@mail.ru
   license:
     name: GNU 3.0
@@ -12,10 +12,13 @@ servers:
   - url: http://127.0.0.1:80/api
 
 tags:
-  - name: users
+  - name: Users
     description: API для работы с пользователем
-  - name: books
+  - name: Books
     description: API для работы с книгами
+  - name: User books
+    description: API для работы с книгами, выданными пользователям
+
 
 paths:
   /users:
@@ -26,20 +29,20 @@ paths:
       requestBody:
         content:
           application/json:
-            schema: 
+            schema:
               $ref: '#/components/schemas/BaseUser'
       responses:
         "200":
           description: Добавление пользователя прошло успешно
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/FullUser'
         "400":
           description: Неверная схема данных или входные данные неверны
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 code: 400
@@ -51,7 +54,7 @@ paths:
       parameters:
         - name: page
           in: query
-          schema: 
+          schema:
             type: integer
             default: 1
         - name: size
@@ -64,13 +67,13 @@ paths:
           description: OK
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/UserList'
         "400":
           description: Переданы не верные данные для пагинации
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
                 example:
                   code: 400
@@ -83,7 +86,7 @@ paths:
       parameters:
         - name: user_id
           in: path
-          schema: 
+          schema:
             type: integer
           required: true
       responses:
@@ -97,7 +100,7 @@ paths:
           description: Пользователь с таким ID не найден
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 code: 404
@@ -109,26 +112,26 @@ paths:
       parameters:
         - name: user_id
           in: path
-          schema: 
+          schema:
             type: integer
           required: true
       requestBody:
         content:
           application/json:
-            schema: 
+            schema:
               $ref: '#/components/schemas/BaseUser'
       responses:
-        "200": 
+        "200":
           description: OK
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/FullUser'
         "400":
           description: Ошибка запроса
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 code: 400
@@ -137,7 +140,7 @@ paths:
           description: Пользователь с таким ID не найден
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 code: 404
@@ -151,17 +154,17 @@ paths:
       parameters:
         - name: user_id
           in: path
-          schema: 
+          schema:
             type: integer
           required: true
-      responses: 
+      responses:
         "204":
           description: Удаление прошло успешно или пользователя не существует
         "400":
           description: Ошибка данных - пользователь не вернул книги
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 code: 400
@@ -172,13 +175,13 @@ paths:
         - users
       summary: Возвращает список книг, которые взял пользователь
       description: |
-        Без дополнительных параметров метод должен возвращать только список книг, которые на руках 
-        у пользователя, в том порядке, котором он их брал. Если передан параметр `history=true`, значит должны отображаться только 
+        Без дополнительных параметров метод должен возвращать только список книг, которые на руках
+        у пользователя, в том порядке, котором он их брал. Если передан параметр `history=true`, значит должны отображаться только
         возвращенные книги в порядке их взятия пользователем
       parameters:
         - name: user_id
           in: path
-          schema: 
+          schema:
             type: integer
           required: true
         - name: history
@@ -187,7 +190,7 @@ paths:
             type: boolean
         - name: page
           in: query
-          schema: 
+          schema:
             type: integer
             default: 1
         - name: size
@@ -201,13 +204,13 @@ paths:
           description: OK
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/UserBookList'
         "400":
           description:  Ошибка запроса
-          content: 
+          content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 code: 400
@@ -219,31 +222,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          
+
     post:
       tags:
         - users
       summary: Выдает/возвращает книгу пользователя
       description: |
-        Параметр метода `action` определяет, какое действие нужно совершить над книгой - 
+        Параметр метода `action` определяет, какое действие нужно совершить над книгой -
         выдать (`give`) или вернуть (`return`).
       parameters:
         - name: user_id
           in: path
-          schema: 
+          schema:
             type: integer
           required: true
       requestBody:
         content:
           application/json:
-            schema: 
+            schema:
               $ref: '#/components/schemas/ActionBook'
       responses:
         "200":
           description: OK
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/UserBook'
 
         "400":
@@ -252,7 +255,7 @@ paths:
             (книга на руках у другого пользователя, книгу уже вернули, книгу не брали).
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 message: "Request error"
@@ -260,7 +263,7 @@ paths:
           description: Пользователь или книга с указанными ID не найдены
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 message: "Book not found"
@@ -289,14 +292,14 @@ paths:
         - name: given
           in: query
           required: false
-          schema: 
+          schema:
             type: boolean
       description: |
-        При передаче параметра `q` должен осуществляться поиск в базе через 
+        При передаче параметра `q` должен осуществляться поиск в базе через
         SQL запрос вида `ilike '%query_string%'` (поиск переданной подстроки в названии).
         Параметр `given` фильтрует книги по выданным или нет.
       responses:
-        "200": 
+        "200":
           description: OK
           content:
             application/json:
@@ -323,7 +326,7 @@ paths:
               example:
                 code: 400
                 message: Request error!
-    post: 
+    post:
       tags:
         - books
       summary: Создает книгу в сервисе
@@ -332,7 +335,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: 
+            schema:
               $ref: '#/components/schemas/BaseBook'
       responses:
         "201":
@@ -342,10 +345,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/FullBook'
         "400":
-          description: Ошибка запроса 
+          description: Ошибка запроса
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /books/{book_id}:
     get:
@@ -360,24 +363,24 @@ paths:
             type: integer
       description: |
         Возвращает информацию о книге с 10-ю последними записями о ее читателях.
-        Также в списке должна присутствовать информация о том, кто ее не вернул, 
+        Также в списке должна присутствовать информация о том, кто ее не вернул,
         если она на руках. Список читателей сортируется по убыванию даты взятия
         книги.
       responses:
-        "200":  
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FullBook'
-            
+
         "404":
           description: Книга не найдена
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              example: 
+              example:
                 code: 404
                 message: Object not found
     patch:
@@ -398,7 +401,7 @@ paths:
             schema:
               $ref: '#/components/schemas/BaseBook'
       responses:
-        "200": 
+        "200":
           description: OK
           content:
             application/json:
@@ -408,16 +411,16 @@ paths:
           description: Ошибка в данных
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 code: 400
                 message: Request error!
         "404":
           description: Книга не найдена
-          content: 
+          content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 code: 404
@@ -479,7 +482,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/BaseUser'
         - type: object
-          properties: 
+          properties:
             created_at:
               type: string
               format: date-time
@@ -593,14 +596,14 @@ components:
           format: int64
           nullable: false
           description: Пользователь, который взял книгу
-          example: 10 
+          example: 10
         book_id:
           type: integer
           format: int 64
           nullable: false
           description: Книга, которую взяли
           example: 17
-    
+
     UserBookList:
       type: object
       required:
@@ -676,7 +679,7 @@ components:
           nullable: false
           example: 404
 
-    UserList: 
+    UserList:
       type: object
       required:
         - page

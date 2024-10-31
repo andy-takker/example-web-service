@@ -1,9 +1,9 @@
-from library.application.use_case import IUseCase
+from library.application.use_case import IQuery
 from library.domains.entities.book import Book, BookId
 from library.domains.services.book import BookService
 
 
-class FetchBookById(IUseCase[BookId, Book]):
+class FetchBookByIdQuery(IQuery[BookId, Book]):
     __book_service: BookService
 
     def __init__(self, book_service: BookService) -> None:

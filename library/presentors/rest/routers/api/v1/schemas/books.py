@@ -27,3 +27,15 @@ class BookPaginationSchema(BaseModel):
 
     total: int
     items: Sequence[BookSchema]
+
+
+class CreateBookSchema(BaseModel):
+    title: str
+    year: PositiveInt
+    author: str
+
+
+class UpdateBookSchema(BaseModel):
+    title: str | None = None
+    year: int | None = None
+    author: str | None = None

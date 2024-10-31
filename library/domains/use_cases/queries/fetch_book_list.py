@@ -3,7 +3,7 @@ from library.domains.entities.book import BookPagination, BookPaginationParams
 from library.domains.services.book import BookService
 
 
-class FetchBookList(IUseCase[BookPaginationParams, BookPagination]):
+class FetchBookListQuery(IUseCase[BookPaginationParams, BookPagination]):
     def __init__(self, *, book_service: BookService) -> None:
         self.book_service = book_service
 
