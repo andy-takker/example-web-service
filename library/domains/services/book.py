@@ -31,13 +31,11 @@ class BookService:
         return await self.__book_storage.create_book(book=book)
 
     async def delete_book_by_id(self, *, book_id: BookId) -> None:
-        book = await self.fetch_book_by_id(book_id=book_id)
-        if book is None:
+        if not await self.__book_storage.exists_book_by_id(book_id=book_id):
             raise EntityNotFoundException(entity=Book, entity_id=book_id)
         await self.__book_storage.delete_book_by_id(book_id=book_id)
 
     async def update_book_by_id(self, *, update_book: UpdateBook) -> Book:
-        book = await self.fetch_book_by_id(book_id=update_book.book_id)
-        if book is None:
-            raise EntityNotFoundException(entity=Book, entity_id=update_book.book_id)
+        if not await self.__book_storage.exists_book_by_id(book_id=update_book.id):
+            raise EntityNotFoundException(entity=Book, entity_id=update_book.id)
         return await self.__book_storage.update_book_by_id(update_book=update_book)

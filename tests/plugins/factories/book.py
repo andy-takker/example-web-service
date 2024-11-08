@@ -7,7 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from library.adapters.database.tables import BookTable
 
 
-class BookTableFactory(SQLAlchemyFactory[BookTable]): ...
+class BookTableFactory(SQLAlchemyFactory[BookTable]):
+    @classmethod
+    def deleted_at(cls) -> None:
+        return None
 
 
 @pytest.fixture

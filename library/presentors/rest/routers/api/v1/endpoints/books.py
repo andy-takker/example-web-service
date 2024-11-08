@@ -12,11 +12,15 @@ from library.domains.entities.book import (
     UpdateBook,
 )
 from library.domains.uow import AbstractUow
-from library.domains.use_cases.commands.create_book import CreateBookCommand
-from library.domains.use_cases.commands.delete_book_by_id import DeleteBookByIdCommand
-from library.domains.use_cases.commands.update_book_by_id import UpdateBookByIdCommand
-from library.domains.use_cases.queries.fetch_book_by_id import FetchBookByIdQuery
-from library.domains.use_cases.queries.fetch_book_list import FetchBookListQuery
+from library.domains.use_cases.commands.book.create_book import CreateBookCommand
+from library.domains.use_cases.commands.book.delete_book_by_id import (
+    DeleteBookByIdCommand,
+)
+from library.domains.use_cases.commands.book.update_book_by_id import (
+    UpdateBookByIdCommand,
+)
+from library.domains.use_cases.queries.book.fetch_book_by_id import FetchBookByIdQuery
+from library.domains.use_cases.queries.book.fetch_book_list import FetchBookListQuery
 from library.presentors.rest.routers.api.v1.schemas.books import (
     BookPaginationParamsSchema,
     BookPaginationSchema,
@@ -106,7 +110,7 @@ async def update_book_by_id(
     async with uow:
         book = await update_book.execute(
             input_dto=UpdateBook(
-                book_id=BookId(book_id),
+                id=BookId(book_id),
                 **values,
             ),
         )

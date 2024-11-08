@@ -5,9 +5,6 @@ from os import environ
 @dataclass(frozen=True, kw_only=True, slots=True)
 class DatabaseConfig:
     dsn: str = field(default_factory=lambda: environ["APP_DB_DSN"])
-    replicas: int = field(
-        default_factory=lambda: int(environ.get("APP_DB_REPLICAS", 0))
-    )
     pool_size: int = field(
         default_factory=lambda: int(environ.get("APP_DB_POOL_SIZE", 10))
     )

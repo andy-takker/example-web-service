@@ -4,9 +4,11 @@ from dishka import AnyOf, BaseScope, Component, Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from library.adapters.database.storages.book import BookStorage
+from library.adapters.database.storages.user import UserStorage
 from library.adapters.database.uow import SqlalchemyUow
 from library.adapters.database.utils import create_engine, create_sessionmaker
 from library.domains.interfaces.storages.book import IBookStorage
+from library.domains.interfaces.storages.user import IUserStorage
 from library.domains.uow import AbstractUow
 
 
@@ -40,3 +42,7 @@ class DatabaseProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def book_storage(self, uow: SqlalchemyUow) -> IBookStorage:
         return BookStorage(session=uow.session)
+
+    @provide(scope=Scope.REQUEST)
+    def user_storage(self, uow: SqlalchemyUow) -> IUserStorage:
+        return UserStorage(session=uow.session)

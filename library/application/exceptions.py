@@ -13,3 +13,6 @@ class EntityNotFoundException(LibraryException):
 
 
 class EmptyPayloadException(LibraryException): ...
+
+
+class UserAlreadyExistsException(LibraryException): ...
