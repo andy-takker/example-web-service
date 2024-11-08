@@ -35,3 +35,7 @@ class IBookStorage(Protocol):
     @abstractmethod
     async def update_book_by_id(self, *, update_book: UpdateBook) -> Book:
         raise NotImplementedError
+
+    @abstractmethod
+    async def exists_book_by_id(self, *, book_id: BookId) -> bool:
+        raise NotImplementedError

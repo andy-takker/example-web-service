@@ -1,8 +1,10 @@
 import logging
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
+from contextlib import asynccontextmanager
+from dataclasses import dataclass
+from typing import Final
 
-from aiomisc.service.uvicorn import UvicornApplication, UvicornService
-from dishka import AsyncContainer, make_async_container
+from dishka import make_async_container
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,22 +30,19 @@ log = logging.getLogger(__name__)
 
 ExceptionHandlersType = tuple[tuple[type[Exception], Callable], ...]
 
+EXCEPTION_HANDLERS: Final[ExceptionHandlersType] = (
+    (HTTPException, http_exception_handler),
+    (LibraryException, library_exception_handler),
+    (EntityNotFoundException, entity_not_found_exception_handler),
+    (EmptyPayloadException, empty_payload_exception_handler),
+)
 
-class RestService(UvicornService):
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class RestService:
     config: RestConfig
 
-    __required__ = ("config",)
-
-    container: AsyncContainer
-
-    EXCEPTION_HANDLERS: ExceptionHandlersType = (
-        (HTTPException, http_exception_handler),
-        (LibraryException, library_exception_handler),
-        (EntityNotFoundException, entity_not_found_exception_handler),
-        (EmptyPayloadException, empty_payload_exception_handler),
-    )
-
-    async def create_application(self) -> UvicornApplication:
+    def create_application(self) -> FastAPI:
         app = FastAPI(
             debug=self.config.app.debug,
             title=self.config.app.title,
@@ -61,6 +60,7 @@ class RestService(UvicornService):
                 "url": "https://github.com/andy-takker",
                 "email": "sergey.natalenko@mail.ru",
             },
+            lifespan=lifespan,
         )
 
         self.set_middlewares(app=app)
@@ -70,9 +70,6 @@ class RestService(UvicornService):
 
         log.info("REST service app configured")
         return app
-
-    async def stop(self, exception: Exception | None = None) -> None:
-        await self.container.close(exception=exception)
 
     def set_middlewares(self, app: FastAPI) -> None:
         app.add_middleware(
@@ -87,15 +84,21 @@ class RestService(UvicornService):
         app.include_router(api_router)
 
     def set_exceptions(self, app: FastAPI) -> None:
-        for exception, handler in self.EXCEPTION_HANDLERS:
+        for exception, handler in EXCEPTION_HANDLERS:
             app.add_exception_handler(exception, handler)
 
     def set_dependencies(self, app: FastAPI) -> None:
-        self.container = make_async_container(
+        container = make_async_container(
             DatabaseProvider(
                 dsn=self.config.database.dsn,
                 debug=self.config.app.debug,
             ),
             DomainProvider(),
         )
-        setup_dishka(container=self.container, app=app)
+        setup_dishka(container=container, app=app)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    yield
+    await app.state.dishka_container.close()

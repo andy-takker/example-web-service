@@ -13,7 +13,7 @@ from library.adapters.database.utils import (
     create_sessionmaker,
     make_alembic_config,
 )
-from tests.utils import run_async_migrations
+from tests.utils import run_async_migrations, truncate_tables
 
 
 @pytest.fixture
@@ -43,10 +43,8 @@ async def engine(
     db_config: DatabaseConfig,
 ) -> AsyncIterator[AsyncEngine]:
     await run_async_migrations(alembic_config, BaseTable.metadata, "head")
-    async with create_engine(dsn=db_config.dsn, debug=False) as engine:
-        async with engine.begin() as conn:
-            await conn.run_sync(BaseTable.metadata.drop_all)
-            await conn.run_sync(BaseTable.metadata.create_all)
+    async with create_engine(dsn=db_config.dsn, debug=True) as engine:
+        await truncate_tables(engine)
         yield engine
 
 
@@ -61,3 +59,4 @@ async def session(
 ) -> AsyncIterator[AsyncSession]:
     async with session_factory() as session:
         yield session
+        await session.rollback()

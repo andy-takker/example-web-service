@@ -1,10 +1,12 @@
 from collections.abc import Sequence
 from datetime import UTC, datetime
 
-from sqlalchemy import func, insert, select, update
+from sqlalchemy import exists, func, insert, select, update
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from library.adapters.database.tables import BookTable
+from library.application.exceptions import EntityNotFoundException
 from library.domains.entities.book import (
     Book,
     BookId,
@@ -37,6 +39,12 @@ class BookStorage(IBookStorage):
             updated_at=book.updated_at,
         )
 
+    async def exists_book_by_id(self, *, book_id: BookId) -> bool:
+        stmt = select(
+            exists().where(BookTable.id == book_id, BookTable.deleted_at.is_(None))
+        )
+        return bool((await self.session.execute(stmt)).scalar())
+
     async def count_books(self, *, params: BookPaginationParams) -> int:
         query = (
             select(func.count())
@@ -48,10 +56,18 @@ class BookStorage(IBookStorage):
 
     async def fetch_book_list(self, *, params: BookPaginationParams) -> Sequence[Book]:
         query = (
-            select(BookTable)
+            select(
+                BookTable.id,
+                BookTable.title,
+                BookTable.year,
+                BookTable.author,
+                BookTable.created_at,
+                BookTable.updated_at,
+            )
             .where(BookTable.deleted_at.is_(None))
             .limit(params.limit)
             .offset(params.offset)
+            .order_by(BookTable.id)
         )
         result = (await self.session.execute(query)).mappings().all()
         return [
@@ -74,7 +90,14 @@ class BookStorage(IBookStorage):
                 year=book.year,
                 author=book.author,
             )
-            .returning(BookTable)
+            .returning(
+                BookTable.id,
+                BookTable.title,
+                BookTable.year,
+                BookTable.author,
+                BookTable.created_at,
+                BookTable.updated_at,
+            )
         )
         result = (await self.session.execute(stmt)).mappings().one()
 
@@ -98,11 +121,21 @@ class BookStorage(IBookStorage):
     async def update_book_by_id(self, *, update_book: UpdateBook) -> Book:
         stmt = (
             update(BookTable)
-            .where(BookTable.id == update_book.book_id)
+            .where(BookTable.id == update_book.id)
             .values(**update_book.to_dict())
-            .returning(BookTable)
+            .returning(
+                BookTable.id,
+                BookTable.title,
+                BookTable.year,
+                BookTable.author,
+                BookTable.created_at,
+                BookTable.updated_at,
+            )
         )
-        result = (await self.session.execute(stmt)).mappings().one()
+        try:
+            result = (await self.session.execute(stmt)).mappings().one()
+        except NoResultFound as e:
+            raise EntityNotFoundException(entity=Book, entity_id=update_book.id) from e
         return Book(
             id=BookId(result["id"]),
             title=result["title"],

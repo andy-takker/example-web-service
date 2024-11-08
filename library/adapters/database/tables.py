@@ -1,18 +1,19 @@
-import uuid
-
 from sqlalchemy import Integer, String
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from library.adapters.database.base import BaseTable, TimestampedMixin
+from library.adapters.database.base import BaseTable, IdentifableMixin, TimestampedMixin
 
 
-class BookTable(BaseTable, TimestampedMixin):
+class BookTable(BaseTable, TimestampedMixin, IdentifableMixin):
     __tablename__ = "books"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     author: Mapped[str] = mapped_column(String(255), nullable=False)
+
+
+class UserTable(BaseTable, TimestampedMixin, IdentifableMixin):
+    __tablename__ = "users"
+
+    username: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)

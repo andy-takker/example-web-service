@@ -1,7 +1,9 @@
 from collections.abc import Sequence
 
+from alembic.autogenerate import compare_metadata
 from alembic.config import Config as AlembicConfig
 from alembic.runtime.environment import EnvironmentContext
+from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import Connection, MetaData, pool, text
 from sqlalchemy.ext.asyncio import (
@@ -11,7 +13,7 @@ from sqlalchemy.ext.asyncio import (
 
 TABLES_FOR_TRUNCATE: Sequence[str] = (
     "books",
-    # "authors",
+    "users",
 )
 
 
@@ -62,3 +64,8 @@ def _do_run_migrations(
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
+
+
+def get_diff_db_metadata(connection: Connection, metadata: MetaData):
+    migration_ctx = MigrationContext.configure(connection)
+    return compare_metadata(context=migration_ctx, metadata=metadata)

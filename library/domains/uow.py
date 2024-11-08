@@ -7,8 +7,6 @@ log = logging.getLogger(__name__)
 
 
 class AbstractUow(ABC):
-    transaction: Any | None
-
     async def __aenter__(self) -> Self:
         await self.create_transaction()
         return self
@@ -19,12 +17,11 @@ class AbstractUow(ABC):
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        if self.transaction:
-            if exc_val:
-                log.info("Rolling back transaction due to exception")
-                await self.rollback()
-            else:
-                await self.commit()
+        if exc_val:
+            log.info("Rolling back transaction due to exception")
+            await self.rollback()
+        else:
+            await self.commit()
         await self.close_transaction(exc_type, exc_val, exc_tb)
 
     @abstractmethod

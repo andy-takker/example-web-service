@@ -6,51 +6,46 @@ from uuid import UUID
 
 from library.application.entities import UNSET, Unset
 
-BookId = NewType("BookId", UUID)
+UserId = NewType("UserId", UUID)
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class Book:
-    id: BookId
-    title: str
-    year: int
-    author: str
+class User:
+    id: UserId
+    username: str
+    email: str
     created_at: datetime
     updated_at: datetime
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class BookPaginationParams:
+class UserPaginationParams:
     limit: int
     offset: int
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class BookPagination:
+class UserPagination:
     total: int
-    items: Sequence[Book]
+    items: Sequence[User]
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class CreateBook:
-    title: str
-    year: int
-    author: str
+class CreateUser:
+    username: str
+    email: str
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class UpdateBook:
-    id: BookId
-    title: str | Unset = UNSET
-    year: int | Unset = UNSET
-    author: str | Unset = UNSET
+class UpdateUser:
+    id: UserId
+    username: str | Unset = UNSET
+    email: str | Unset = UNSET
 
     def to_dict(self) -> Mapping[str, int | str]:
         values: dict[str, int | str] = {}
-        if not isinstance(self.title, Unset):
-            values["title"] = self.title
-        if not isinstance(self.year, Unset):
-            values["year"] = self.year
-        if not isinstance(self.author, Unset):
-            values["author"] = self.author
+        if not isinstance(self.username, Unset):
+            values["username"] = self.username
+        if not isinstance(self.email, Unset):
+            values["email"] = self.email
         return values
