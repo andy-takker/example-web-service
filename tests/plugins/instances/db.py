@@ -45,6 +45,7 @@ async def engine(
     await run_async_migrations(alembic_config, BaseTable.metadata, "head")
     async with create_engine(dsn=db_config.dsn, debug=True) as engine:
         await truncate_tables(engine)
+
         yield engine
 
 

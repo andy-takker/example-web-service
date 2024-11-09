@@ -1,0 +1,40 @@
+name: Run auto tests
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    name: Run service tests with pytest
+    runs-on: ubuntu-22.04
+    container: python:3.12
+    services:
+      db:
+        image: postgres:16
+        env:
+          TZ: UTC
+          POSTGRES_USER: testuser
+          POSTGRES_DB: testdb
+          POSTGRES_PASSWORD: testpass
+        options: >-
+          --health-cmd "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: make develop-ci
+
+      - name: Run tests
+        run: make test-ci
+        env:
+          APP_DB_DSN: postgresql+asyncpg://testuser:testpass@db:5432/testdb

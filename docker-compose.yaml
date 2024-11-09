@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16
+    restart: on-failure:5
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    image: andytakker/example-web-service:latest
+    command: granian --interface asgi --host 0.0.0.0 --port 8080 --loop uvloop library.main:app --access-log --log-level info
+    ports:
+      - "${APP_PORT}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - APP_TITLE=${APP_TITLE:-Library}
+      - APP_DESCRIPTION=${APP_DESCRIPTION:-Example web service for library}
+      - APP_VERSION=${APP_VERSION:-1.0.0}
+      - APP_DEBUG=${APP_DEBUG:-False}
+      - APP_SECRET=${APP_SECRET:-secret}
+      - APP_DB_DSN=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - APP_DB_POOL_SIZE=${APP_DB_POOL_SIZE:-10}
+      - APP_DB_POOL_TIMEOUT=${APP_DB_POOL_TIMEOUT:-10}
+
+volumes:
+  postgres_data:

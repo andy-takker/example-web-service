@@ -8,9 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from library.adapters.database.tables import UserTable
 from library.application.exceptions import (
+    EntityAlreadyExistsException,
     EntityNotFoundException,
     LibraryException,
-    UserAlreadyExistsException,
 )
 from library.domains.entities.user import (
     CreateUser,
@@ -145,6 +145,6 @@ class UserStorage(IUserStorage):
         constraint = e.__cause__.__cause__.constraint_name  # type: ignore[union-attr]
 
         if constraint in ("uq__users__username", "uq__users__email"):
-            raise UserAlreadyExistsException(message="User already exists") from e
+            raise EntityAlreadyExistsException(message="User already exists") from e
 
         raise LibraryException(message="Unknown error") from e
