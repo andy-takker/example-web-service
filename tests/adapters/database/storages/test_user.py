@@ -6,8 +6,8 @@ from sqlalchemy import select
 
 from library.adapters.database.tables import UserTable
 from library.application.exceptions import (
+    EntityAlreadyExistsException,
     EntityNotFoundException,
-    UserAlreadyExistsException,
 )
 from library.domains.entities.user import (
     CreateUser,
@@ -139,7 +139,7 @@ async def test_create_user__ok(user_storage: IUserStorage, session):
 
 async def test_create_user__duplicate_username(user_storage: IUserStorage, create_user):
     await create_user(id=UUID_1, username="username")
-    with pytest.raises(UserAlreadyExistsException):
+    with pytest.raises(EntityAlreadyExistsException):
         await user_storage.create_user(
             user=CreateUser(
                 username="username",
@@ -150,7 +150,7 @@ async def test_create_user__duplicate_username(user_storage: IUserStorage, creat
 
 async def test_create_user__duplicate_email(user_storage: IUserStorage, create_user):
     await create_user(id=UUID_1, email="email@example.com")
-    with pytest.raises(UserAlreadyExistsException):
+    with pytest.raises(EntityAlreadyExistsException):
         await user_storage.create_user(
             user=CreateUser(
                 username="username",

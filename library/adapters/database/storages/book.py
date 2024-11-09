@@ -1,12 +1,17 @@
 from collections.abc import Sequence
 from datetime import UTC, datetime
+from typing import NoReturn
 
 from sqlalchemy import exists, func, insert, select, update
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import DBAPIError, IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from library.adapters.database.tables import BookTable
-from library.application.exceptions import EntityNotFoundException
+from library.application.exceptions import (
+    EntityAlreadyExistsException,
+    EntityNotFoundException,
+    LibraryException,
+)
 from library.domains.entities.book import (
     Book,
     BookId,
@@ -99,8 +104,10 @@ class BookStorage(IBookStorage):
                 BookTable.updated_at,
             )
         )
-        result = (await self.session.execute(stmt)).mappings().one()
-
+        try:
+            result = (await self.session.execute(stmt)).mappings().one()
+        except IntegrityError as e:
+            self._raise_error(e)
         return Book(
             id=BookId(result["id"]),
             title=result["title"],
@@ -136,6 +143,8 @@ class BookStorage(IBookStorage):
             result = (await self.session.execute(stmt)).mappings().one()
         except NoResultFound as e:
             raise EntityNotFoundException(entity=Book, entity_id=update_book.id) from e
+        except IntegrityError as e:
+            self._raise_error(e)
         return Book(
             id=BookId(result["id"]),
             title=result["title"],
@@ -144,3 +153,9 @@ class BookStorage(IBookStorage):
             created_at=result["created_at"],
             updated_at=result["updated_at"],
         )
+
+    def _raise_error(self, e: DBAPIError) -> NoReturn:
+        constraint = e.__cause__.__cause__.constraint_name  # type: ignore[union-attr]
+        if constraint == "ix__books__title_year_author":
+            raise EntityAlreadyExistsException("Book already exists") from e
+        raise LibraryException(message="Unknown error") from e

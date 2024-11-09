@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 from library.application.exceptions import (
     EmptyPayloadException,
+    EntityAlreadyExistsException,
     EntityNotFoundException,
     LibraryException,
 )
@@ -44,6 +45,16 @@ async def library_exception_handler(
 ) -> JSONResponse:
     return exception_json_response(
         status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+        message=exc.message,
+    )
+
+
+async def entity_already_exists_exception_handler(
+    request: Request,
+    exc: EntityAlreadyExistsException,
+) -> JSONResponse:
+    return exception_json_response(
+        status_code=HTTPStatus.CONFLICT,
         message=exc.message,
     )
 

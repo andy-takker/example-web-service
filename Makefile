@@ -2,6 +2,23 @@ PROJECT_NAME = library
 TEST_FOLDER_NAME = tests
 PYTHON_VERSION = 3.12
 
+develop: clean_dev ##@Develop Create virtualenv
+	python$(PYTHON_VERSION) -m venv .venv
+	.venv/bin/pip install -U pip poetry
+	.venv/bin/poetry config virtualenvs.create false
+	.venv/bin/poetry install
+	.venv/bin/pre-commit install
+
+local: ##@Develop Run dev containers for test
+	docker compose -f docker-compose.dev.yaml up --force-recreate --renew-anon-volumes --build
+
+local_down: ##@Develop Stop dev containers with delete volumes
+	docker compose -f docker-compose.dev.yaml down -v
+
+develop-ci: ##@Develop Create virtualenv for CI
+	python -m pip install -U pip poetry
+	poetry config virtualenvs.create false
+	poetry install --no-root
 
 test-ci: ##@Test Run tests with pytest and coverage in CI
 	pytest ./$(TEST_FOLDER_NAME) --junitxml=./junit.xml --cov=./$(PROJECT_NAME) --cov-report=xml
@@ -13,24 +30,6 @@ ruff: ##@Linting Run ruff
 
 mypy: ##@Linting Run mypy
 	mypy --config-file ./pyproject.toml ./$(PROJECT_NAME) --enable-incomplete-feature=NewGenericSyntax
-
-develop: clean_dev ##@Develop Create virtualenv
-	python$(PYTHON_VERSION) -m venv .venv
-	.venv/bin/pip install -U pip poetry
-	.venv/bin/poetry config virtualenvs.create false
-	.venv/bin/poetry install
-	.venv/bin/pre-commit install
-
-develop-ci: ##@Develop Create virtualenv for CI
-	python -m pip install -U pip poetry
-	poetry config virtualenvs.create false
-	poetry install --no-root
-
-local: ##@Develop Run dev containers for test
-	docker compose -f docker-compose.dev.yaml up --force-recreate --renew-anon-volumes --build
-
-local_down: ##@Develop Stop dev containers with delete volumes
-	docker compose -f docker-compose.dev.yaml down -v
 
 alembic_init: ##@Database Run alembic init for async
 	.venv/bin/alembic init -t async ./$(PROJECT_NAME)/adapters/database/migrations

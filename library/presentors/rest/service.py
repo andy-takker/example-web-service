@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from library.adapters.database.di import DatabaseProvider
 from library.application.exceptions import (
     EmptyPayloadException,
+    EntityAlreadyExistsException,
     EntityNotFoundException,
     LibraryException,
 )
@@ -20,6 +21,7 @@ from library.presentors.rest.config import RestConfig
 from library.presentors.rest.routers.api.router import router as api_router
 from library.presentors.rest.routers.api.v1.exception_handlers import (
     empty_payload_exception_handler,
+    entity_already_exists_exception_handler,
     entity_not_found_exception_handler,
     http_exception_handler,
     library_exception_handler,
@@ -35,6 +37,7 @@ EXCEPTION_HANDLERS: Final[ExceptionHandlersType] = (
     (LibraryException, library_exception_handler),
     (EntityNotFoundException, entity_not_found_exception_handler),
     (EmptyPayloadException, empty_payload_exception_handler),
+    (EntityAlreadyExistsException, entity_already_exists_exception_handler),
 )
 
 
