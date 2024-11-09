@@ -20,17 +20,8 @@ jobs:
     needs: check
     uses: ./.github/workflows/_test.yaml
 
-  test-secret:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run secret check
-        run:
-          echo "secret is ${{ secrets.APP_SECRET }}"
-
   build-and-publish:
     name: Build and publish image to Docker Hub
     needs: test
     uses: ./.github/workflows/_build_and_publish.yaml
+    secrets: inherit
