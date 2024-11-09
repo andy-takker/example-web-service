@@ -5,9 +5,13 @@ from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from library.adapters.database.tables import UserTable
+from tests.utils import IterUse
 
 
 class UserTableFactory(SQLAlchemyFactory[UserTable]):
+    email = IterUse[str](lambda count: f"email{count}@example.com")
+    username = IterUse[str](lambda count: f"username{count}")
+
     @classmethod
     def deleted_at(cls) -> None:
         return None
