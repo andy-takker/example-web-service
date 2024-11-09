@@ -24,3 +24,6 @@ jobs:
     name: Build and publish image to Docker Hub
     needs: test
     uses: ./.github/workflows/_build_and_publish.yaml
+    permissions:
+      id-token: write
+      contents: write
