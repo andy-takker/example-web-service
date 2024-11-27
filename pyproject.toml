@@ -16,7 +16,7 @@ alembic = "^1.13.3"
 asyncpg = "^0.30.0"
 uvloop = "^0.21.0"
 granian = "^1.6.4"
-pydantic = {extras = ["email"], version = "^2.10.1"}
+pydantic = {extras = ["email"], version = "^2.10.2"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
