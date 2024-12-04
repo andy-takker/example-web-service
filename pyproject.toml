@@ -10,13 +10,13 @@ readme = "README.md"
 python = "^3.12"
 aiomisc = "^17.5.29"
 dishka = "^1.4.2"
-fastapi = "^0.115.5"
+fastapi = "^0.115.6"
 SQLAlchemy = "^2.0.36"
 alembic = "^1.13.3"
 asyncpg = "^0.30.0"
 uvloop = "^0.21.0"
 granian = "^1.6.4"
-pydantic = {extras = ["email"], version = "^2.10.2"}
+pydantic = {extras = ["email"], version = "^2.10.3"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
