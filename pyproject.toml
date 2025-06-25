@@ -1,38 +1,37 @@
-[tool.poetry]
+[project]
 name = "library"
 version = "0.1.0"
 description = "Example web-service"
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
 authors = ["Sergey Natalenko <sergey.natalenko@mail.ru>"]
 license = "MIT"
-readme = "README.md"
+dependencies = [
+    "aiomisc>=17.5.29",
+    "dishka>=1.4.2",
+    "fastapi>=0.115.6",
+    "SQLAlchemy>=2.0.36",
+    "alembic>=1.13.3",
+    "asyncpg>=0.30.0",
+    "uvloop>=0.21.0",
+    "granian>=1.6.4",
+    "pydantic[email]>=2.10.3",
+    "greenlet>=3.2.3",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-aiomisc = "^17.5.29"
-dishka = "^1.4.2"
-fastapi = "^0.115.6"
-SQLAlchemy = "^2.0.36"
-alembic = "^1.13.3"
-asyncpg = "^0.30.0"
-uvloop = "^0.21.0"
-granian = "^1.6.4"
-pydantic = {extras = ["email"], version = "^2.10.3"}
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-pytest-asyncio = "^0.24.0"
-pytest-cov = "^6.0.0"
-coverage = "^7.6.9"
-mypy = "^1.12.1"
-ruff = "^0.8.2"
-polyfactory = "^2.18.1"
-pre-commit = "^4.0.1"
-dirty-equals = "^0.8.0"
-httpx = "^0.28.1"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "coverage>=7.6.9",
+    "mypy>=1.12.1",
+    "ruff>=0.8.2",
+    "polyfactory>=2.18.1",
+    "pre-commit>=4.0.1",
+    "dirty-equals>=0.8.0",
+    "httpx>=0.28.1",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
