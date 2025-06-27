@@ -17,6 +17,7 @@ dependencies = [
     "granian>=1.6.4",
     "pydantic[email]>=2.10.3",
     "greenlet>=3.2.3",
+    "structlog>=25.4.0",
 ]
 
 [dependency-groups]
