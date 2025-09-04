@@ -1,48 +1,49 @@
 from http import HTTPStatus
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from dirty_equals import IsDict, IsStr
+from dirty_equals import IsDatetime, IsDict
 from httpx import AsyncClient
 
-UUID_1 = UUID(int=1)
 
-
-def api_url(book_id: UUID) -> str:
+def api_url(book_id: UUID | None = None) -> str:
+    if book_id is None:
+        book_id = uuid4()
     return f"/api/v1/books/{book_id}/"
 
 
 async def test_fetch_book_by_id__not_found__status(client: AsyncClient):
-    response = await client.get(api_url(book_id=UUID_1))
+    response = await client.get(api_url())
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 async def test_fetch_book_by_id__not_found__format(client: AsyncClient):
-    response = await client.get(api_url(book_id=UUID_1))
+    book_id = uuid4()
+    response = await client.get(api_url(book_id))
     assert response.json() == {
-        "message": f"Book with id {UUID_1} not found",
+        "message": f"Book with id {book_id} not found",
         "ok": False,
         "status_code": HTTPStatus.NOT_FOUND,
     }
 
 
 async def test_fetch_book_by_id__ok__status(create_book, client: AsyncClient):
-    await create_book(id=UUID_1)
+    book = await create_book()
 
-    response = await client.get(api_url(book_id=UUID_1))
+    response = await client.get(api_url(book_id=book.id))
     assert response.status_code == HTTPStatus.OK
 
 
 async def test_fetch_book_by_id__ok__format(create_book, client: AsyncClient):
-    book = await create_book(id=UUID_1)
+    book = await create_book()
 
-    response = await client.get(api_url(book_id=UUID_1))
+    response = await client.get(api_url(book_id=book.id))
     assert response.json() == IsDict(
         {
-            "id": str(UUID_1),
+            "id": str(book.id),
             "title": book.title,
             "year": book.year,
             "author": book.author,
-            "created_at": IsStr(),
-            "updated_at": IsStr(),
+            "created_at": IsDatetime(iso_string=True),
+            "updated_at": IsDatetime(iso_string=True),
         }
     )

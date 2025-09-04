@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import NewType
 from uuid import UUID
 
-from library.application.entities import UNSET, Unset
+from library.application.entities import UNSET
 
 UserId = NewType("UserId", UUID)
 
@@ -39,13 +39,13 @@ class CreateUser:
 @dataclass(frozen=True, kw_only=True, slots=True)
 class UpdateUser:
     id: UserId
-    username: str | Unset = UNSET
-    email: str | Unset = UNSET
+    username: str = UNSET
+    email: str = UNSET
 
     def to_dict(self) -> Mapping[str, int | str]:
         values: dict[str, int | str] = {}
-        if not isinstance(self.username, Unset):
+        if self.username is not UNSET:
             values["username"] = self.username
-        if not isinstance(self.email, Unset):
+        if self.email is not UNSET:
             values["email"] = self.email
         return values

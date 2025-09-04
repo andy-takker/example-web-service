@@ -10,12 +10,15 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from library.adapters.database.di import DatabaseProvider
+from library.adapters.open_library.di import OpenLibraryProvider
+from library.adapters.redis.di import RedisProvider
 from library.application.exceptions import (
     EmptyPayloadException,
     EntityAlreadyExistsException,
     EntityNotFoundException,
     LibraryException,
 )
+from library.application.logging import setup_logging
 from library.domains.di import DomainProvider
 from library.presentors.rest.config import RestConfig
 from library.presentors.rest.routers.api.router import router as api_router
@@ -46,6 +49,9 @@ class RestService:
     config: RestConfig
 
     def create_application(self) -> FastAPI:
+        setup_logging(
+            log_level=self.config.log.log_level, use_json=self.config.log.use_json
+        )
         app = FastAPI(
             debug=self.config.app.debug,
             title=self.config.app.title,
@@ -95,8 +101,13 @@ class RestService:
             DatabaseProvider(
                 dsn=self.config.database.dsn,
                 debug=self.config.app.debug,
+                max_overflow=self.config.database.max_overflow,
+                pool_size=self.config.database.pool_size,
+                pool_timeout=self.config.database.pool_timeout,
             ),
             DomainProvider(),
+            OpenLibraryProvider(config=self.config.open_library),
+            RedisProvider(config=self.config.redis),
         )
         setup_dishka(container=container, app=app)
 

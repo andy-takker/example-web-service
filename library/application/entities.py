@@ -1,8 +1,3 @@
-from typing import Final
+from typing import Any, Final
 
-
-class Unset:
-    pass
-
-
-UNSET: Final = Unset()
+UNSET: Final[Any] = object()

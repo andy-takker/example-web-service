@@ -18,7 +18,7 @@ class UserTableFactory(SQLAlchemyFactory[UserTable]):
 
 
 @pytest.fixture
-def create_user(session: AsyncSession) -> Callable:
+def create_db_user_factory(session: AsyncSession) -> Callable:
     async def _factory(**kwargs) -> UserTable:
         user = UserTableFactory.build(**kwargs)
         session.add(user)

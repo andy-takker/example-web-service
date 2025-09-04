@@ -39,7 +39,7 @@ pytest -vx ./tests
 ### How to apply all actual migrations?
 
 Remember that to connect to the database, you must specify the environment
-variable `APP_DB_DSN`
+variable `APP_DATABASE_DSN`
 
 ```bash
 python -m library.adapters.database upgrade head

@@ -7,6 +7,7 @@ from sqlalchemy.exc import DBAPIError, IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from library.adapters.database.tables import UserTable
+from library.adapters.database.uow import SqlalchemyUow
 from library.application.exceptions import (
     EntityAlreadyExistsException,
     EntityNotFoundException,
@@ -19,18 +20,21 @@ from library.domains.entities.user import (
     UserId,
     UserPaginationParams,
 )
-from library.domains.interfaces.storages.user import IUserStorage
 
 
-class UserStorage(IUserStorage):
-    def __init__(self, session: AsyncSession) -> None:
-        self.session = session
+class UserStorage:
+    def __init__(self, *, uow: SqlalchemyUow) -> None:
+        self._uow = uow
+
+    @property
+    def _session(self) -> AsyncSession:
+        return self._uow.session
 
     async def fetch_user_by_id(self, *, user_id: UserId) -> User | None:
         stmt = select(UserTable).where(
             UserTable.id == user_id, UserTable.deleted_at.is_(None)
         )
-        user = (await self.session.scalars(stmt)).first()
+        user = (await self._session.scalars(stmt)).first()
         if user is None:
             return None
         return User(
@@ -45,7 +49,7 @@ class UserStorage(IUserStorage):
         stmt = select(
             exists().where(UserTable.id == user_id, UserTable.deleted_at.is_(None))
         )
-        return bool((await self.session.execute(stmt)).scalar())
+        return bool((await self._session.execute(stmt)).scalar())
 
     async def count_users(self, *, params: UserPaginationParams) -> int:
         query = (
@@ -53,7 +57,7 @@ class UserStorage(IUserStorage):
             .select_from(UserTable)
             .where(UserTable.deleted_at.is_(None))
         )
-        result = (await self.session.execute(query)).scalar()
+        result = (await self._session.execute(query)).scalar()
         return result or 0
 
     async def fetch_user_list(self, *, params: UserPaginationParams) -> Sequence[User]:
@@ -69,7 +73,7 @@ class UserStorage(IUserStorage):
             .limit(params.limit)
             .offset(params.offset)
         )
-        result = (await self.session.execute(query)).mappings().all()
+        result = (await self._session.execute(query)).mappings().all()
         return [
             User(
                 id=UserId(result["id"]),
@@ -97,7 +101,7 @@ class UserStorage(IUserStorage):
             )
         )
         try:
-            result = (await self.session.execute(stmt)).mappings().one()
+            result = (await self._session.execute(stmt)).mappings().one()
         except IntegrityError as e:
             self._raise_error(e)
         return User(
@@ -114,7 +118,7 @@ class UserStorage(IUserStorage):
             .where(UserTable.id == user_id)
             .values(deleted_at=datetime.now(tz=UTC))
         )
-        await self.session.execute(stmt)
+        await self._session.execute(stmt)
 
     async def update_user_by_id(self, *, update_user: UpdateUser) -> User:
         stmt = (
@@ -130,7 +134,7 @@ class UserStorage(IUserStorage):
             )
         )
         try:
-            result = (await self.session.execute(stmt)).mappings().one()
+            result = (await self._session.execute(stmt)).mappings().one()
         except NoResultFound as e:
             raise EntityNotFoundException(entity=User, entity_id=update_user.id) from e
         return User(

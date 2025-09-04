@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from library.adapters.database.config import DatabaseConfig
 from library.adapters.database.tables import BaseTable
+from library.adapters.database.uow import SqlalchemyUow
 from library.adapters.database.utils import (
     create_engine,
     create_sessionmaker,
@@ -19,10 +20,11 @@ from tests.utils import run_async_migrations, truncate_tables
 @pytest.fixture
 def db_config() -> DatabaseConfig:
     return DatabaseConfig(
-        dsn=environ.get(
-            "APP_DB_DSN",
-            "postgresql+asyncpg://library:library@127.0.0.1:5432/library",
-        ),
+        host=environ.get("APP_DATABASE_HOST", "127.0.0.1"),
+        port=int(environ.get("APP_DATABASE_PORT", 5432)),
+        user=environ.get("APP_DATABASE_USER", "library"),
+        password=environ.get("APP_DATABASE_PASSWORD", "library"),
+        name=environ.get("APP_DATABASE_NAME", "library"),
     )
 
 
@@ -43,7 +45,13 @@ async def engine(
     db_config: DatabaseConfig,
 ) -> AsyncIterator[AsyncEngine]:
     await run_async_migrations(alembic_config, BaseTable.metadata, "head")
-    async with create_engine(dsn=db_config.dsn, debug=True) as engine:
+    async with create_engine(
+        dsn=db_config.dsn,
+        pool_size=db_config.pool_size,
+        pool_timeout=db_config.pool_timeout,
+        max_overflow=db_config.max_overflow,
+        debug=True,
+    ) as engine:
         await truncate_tables(engine)
 
         yield engine
@@ -52,6 +60,13 @@ async def engine(
 @pytest.fixture
 def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return create_sessionmaker(engine=engine)
+
+
+@pytest.fixture
+def uow(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> SqlalchemyUow:
+    return SqlalchemyUow(session_factory=session_factory)
 
 
 @pytest.fixture

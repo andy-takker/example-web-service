@@ -11,7 +11,6 @@ from library.domains.entities.book import (
     CreateBook,
     UpdateBook,
 )
-from library.domains.uow import AbstractUow
 from library.domains.use_cases.commands.book.create_book import CreateBookCommand
 from library.domains.use_cases.commands.book.delete_book_by_id import (
     DeleteBookByIdCommand,
@@ -42,12 +41,10 @@ async def fetch_books(
     params: BookPaginationParamsSchema = Query(),
     *,
     fetch_book_list: FromDishka[FetchBookListQuery],
-    uow: FromDishka[AbstractUow],
 ) -> BookPaginationSchema:
-    async with uow:
-        books = await fetch_book_list.execute(
-            input_dto=BookPaginationParams(limit=params.limit, offset=params.offset)
-        )
+    books = await fetch_book_list.execute(
+        input_dto=BookPaginationParams(limit=params.limit, offset=params.offset)
+    )
     return BookPaginationSchema.model_validate(books)
 
 
@@ -61,16 +58,14 @@ async def create_book(
     create_book_data: CreateBookSchema,
     *,
     create_book: FromDishka[CreateBookCommand],
-    uow: FromDishka[AbstractUow],
 ) -> BookSchema:
-    async with uow:
-        book = await create_book.execute(
-            input_dto=CreateBook(
-                title=create_book_data.title,
-                year=create_book_data.year,
-                author=create_book_data.author,
-            ),
-        )
+    book = await create_book.execute(
+        input_dto=CreateBook(
+            title=create_book_data.title,
+            year=create_book_data.year,
+            author=create_book_data.author,
+        ),
+    )
     return BookSchema.model_validate(book)
 
 
@@ -84,10 +79,8 @@ async def fetch_book(
     book_id: UUID,
     *,
     fetch_book_by_id: FromDishka[FetchBookByIdQuery],
-    uow: FromDishka[AbstractUow],
 ) -> BookSchema:
-    async with uow:
-        book = await fetch_book_by_id.execute(input_dto=BookId(book_id))
+    book = await fetch_book_by_id.execute(input_dto=BookId(book_id))
     return BookSchema.model_validate(book)
 
 
@@ -102,18 +95,16 @@ async def update_book_by_id(
     update_book_data: UpdateBookSchema,
     *,
     update_book: FromDishka[UpdateBookByIdCommand],
-    uow: FromDishka[AbstractUow],
 ) -> BookSchema:
     values = update_book_data.model_dump(exclude_unset=True)
     if not values:
         raise EmptyPayloadException(message="No values to update")
-    async with uow:
-        book = await update_book.execute(
-            input_dto=UpdateBook(
-                id=BookId(book_id),
-                **values,
-            ),
-        )
+    book = await update_book.execute(
+        input_dto=UpdateBook(
+            id=BookId(book_id),
+            **values,
+        ),
+    )
     return BookSchema.model_validate(book)
 
 
@@ -126,7 +117,5 @@ async def delete_book_by_id(
     book_id: UUID,
     *,
     delete_book_by_id: FromDishka[DeleteBookByIdCommand],
-    uow: FromDishka[AbstractUow],
 ) -> None:
-    async with uow:
-        await delete_book_by_id.execute(input_dto=BookId(book_id))
+    await delete_book_by_id.execute(input_dto=BookId(book_id))

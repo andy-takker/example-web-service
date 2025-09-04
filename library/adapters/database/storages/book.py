@@ -7,6 +7,7 @@ from sqlalchemy.exc import DBAPIError, IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from library.adapters.database.tables import BookTable
+from library.adapters.database.uow import SqlalchemyUow
 from library.application.exceptions import (
     EntityAlreadyExistsException,
     EntityNotFoundException,
@@ -19,19 +20,22 @@ from library.domains.entities.book import (
     CreateBook,
     UpdateBook,
 )
-from library.domains.interfaces.storages.book import IBookStorage
 
 
-class BookStorage(IBookStorage):
-    def __init__(self, session: AsyncSession) -> None:
-        self.session = session
+class BookStorage:
+    def __init__(self, *, uow: SqlalchemyUow) -> None:
+        self._uow = uow
+
+    @property
+    def _session(self) -> AsyncSession:
+        return self._uow.session
 
     async def fetch_book_by_id(self, *, book_id: BookId) -> Book | None:
         query = select(BookTable).where(
             BookTable.id == book_id,
             BookTable.deleted_at.is_(None),
         )
-        book = (await self.session.scalars(query)).first()
+        book = (await self._session.scalars(query)).first()
 
         if book is None:
             return None
@@ -48,7 +52,7 @@ class BookStorage(IBookStorage):
         stmt = select(
             exists().where(BookTable.id == book_id, BookTable.deleted_at.is_(None))
         )
-        return bool((await self.session.execute(stmt)).scalar())
+        return bool((await self._session.execute(stmt)).scalar())
 
     async def count_books(self, *, params: BookPaginationParams) -> int:
         query = (
@@ -56,7 +60,7 @@ class BookStorage(IBookStorage):
             .select_from(BookTable)
             .where(BookTable.deleted_at.is_(None))
         )
-        result = (await self.session.execute(query)).scalar()
+        result = (await self._session.execute(query)).scalar()
         return result or 0
 
     async def fetch_book_list(self, *, params: BookPaginationParams) -> Sequence[Book]:
@@ -74,7 +78,7 @@ class BookStorage(IBookStorage):
             .offset(params.offset)
             .order_by(BookTable.id)
         )
-        result = (await self.session.execute(query)).mappings().all()
+        result = (await self._session.execute(query)).mappings().all()
         return [
             Book(
                 id=book["id"],
@@ -105,7 +109,7 @@ class BookStorage(IBookStorage):
             )
         )
         try:
-            result = (await self.session.execute(stmt)).mappings().one()
+            result = (await self._session.execute(stmt)).mappings().one()
         except IntegrityError as e:
             self._raise_error(e)
         return Book(
@@ -123,7 +127,7 @@ class BookStorage(IBookStorage):
             .where(BookTable.id == book_id)
             .values(deleted_at=datetime.now(tz=UTC))
         )
-        await self.session.execute(stmt)
+        await self._session.execute(stmt)
 
     async def update_book_by_id(self, *, update_book: UpdateBook) -> Book:
         stmt = (
@@ -140,7 +144,7 @@ class BookStorage(IBookStorage):
             )
         )
         try:
-            result = (await self.session.execute(stmt)).mappings().one()
+            result = (await self._session.execute(stmt)).mappings().one()
         except NoResultFound as e:
             raise EntityNotFoundException(entity=Book, entity_id=update_book.id) from e
         except IntegrityError as e:

@@ -34,5 +34,5 @@ class CreateUserSchema(BaseModel):
 
 
 class UpdateUserSchema(BaseModel):
-    username: str | None = Field(min_length=3, max_length=255)
-    email: EmailStr | None = Field(min_length=3, max_length=255)
+    username: str | None = Field(default=None, min_length=3, max_length=255)
+    email: EmailStr | None = Field(default=None, min_length=3, max_length=255)

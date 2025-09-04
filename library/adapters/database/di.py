@@ -17,16 +17,28 @@ class DatabaseProvider(Provider):
         self,
         dsn: str,
         debug: bool,
+        pool_size: int,
+        pool_timeout: int,
+        max_overflow: int,
         scope: BaseScope | None = None,
         component: Component | None = None,
     ) -> None:
-        self.dsn = dsn
-        self.debug = debug
+        self._dsn = dsn
+        self._debug = debug
+        self._pool_size = pool_size
+        self._pool_timeout = pool_timeout
+        self._max_overflow = max_overflow
         super().__init__(scope=scope, component=component)
 
     @provide(scope=Scope.APP)
     async def engine(self) -> AsyncIterator[AsyncEngine]:
-        async with create_engine(dsn=self.dsn, debug=self.debug) as engine:
+        async with create_engine(
+            dsn=self._dsn,
+            debug=self._debug,
+            pool_size=self._pool_size,
+            pool_timeout=self._pool_timeout,
+            max_overflow=self._max_overflow,
+        ) as engine:
             yield engine
 
     @provide(scope=Scope.APP)
@@ -37,12 +49,12 @@ class DatabaseProvider(Provider):
     def uow(
         self, session_factory: async_sessionmaker[AsyncSession]
     ) -> AnyOf[SqlalchemyUow, AbstractUow]:
-        return SqlalchemyUow(session=session_factory())
+        return SqlalchemyUow(session_factory=session_factory)
 
     @provide(scope=Scope.REQUEST)
     def book_storage(self, uow: SqlalchemyUow) -> IBookStorage:
-        return BookStorage(session=uow.session)
+        return BookStorage(uow=uow)
 
     @provide(scope=Scope.REQUEST)
     def user_storage(self, uow: SqlalchemyUow) -> IUserStorage:
-        return UserStorage(session=uow.session)
+        return UserStorage(uow=uow)
