@@ -4,7 +4,9 @@ Example REST web service for internet library with:
 
 - clean architecture with interfaces, layers and entities
 - Dependency Injection with [dishka](https://github.com/reagento/dishka)
-- auto tests with [pytest](https://docs.pytest.org/en/stable/)
+- REST API based on [fastapi](https://github.com/fastapi/fastapi)
+- async API based on [faststream](https://github.com/ag2ai/faststream)
+- auto tests with [pytest](https://docs.pytest.org/en/stable/) (also with integration tests for external API with [asyncly](https://github.com/andy-takker/asyncly))
 - formatting and linting with [ruff](https://github.com/astral-sh/ruff) and [mypy](https://github.com/python/mypy)
 - Dockerfile with best practices
 - CI/CD with Github Workflows with separated actions
@@ -39,7 +41,8 @@ pytest -vx ./tests
 ### How to apply all actual migrations?
 
 Remember that to connect to the database, you must specify the environment
-variable `APP_DATABASE_DSN`
+variables `APP_DATABASE_HOST`, `APP_DATABASE_PORT`, `APP_DATABASE_USER`,
+`APP_DATABASE_PASSWORD`, `APP_DATABASE_NAME`.
 
 ```bash
 python -m library.adapters.database upgrade head

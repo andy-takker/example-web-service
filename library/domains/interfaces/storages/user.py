@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from collections.abc import Sequence
 from typing import Protocol
 
@@ -12,30 +11,18 @@ from library.domains.entities.user import (
 
 
 class IUserStorage(Protocol):
-    @abstractmethod
-    async def fetch_user_by_id(self, *, user_id: UserId) -> User | None:
-        raise NotImplementedError
+    async def fetch_user_by_id(self, *, user_id: UserId) -> User | None: ...
 
-    @abstractmethod
-    async def count_users(self, *, params: UserPaginationParams) -> int:
-        raise NotImplementedError
+    async def count_users(self, *, params: UserPaginationParams) -> int: ...
 
-    @abstractmethod
-    async def fetch_user_list(self, *, params: UserPaginationParams) -> Sequence[User]:
-        raise NotImplementedError
+    async def fetch_user_list(
+        self, *, params: UserPaginationParams
+    ) -> Sequence[User]: ...
 
-    @abstractmethod
-    async def create_user(self, *, user: CreateUser) -> User:
-        raise NotImplementedError
+    async def create_user(self, *, user: CreateUser) -> User: ...
 
-    @abstractmethod
-    async def delete_user_by_id(self, *, user_id: UserId) -> None:
-        raise NotImplementedError
+    async def delete_user_by_id(self, *, user_id: UserId) -> None: ...
 
-    @abstractmethod
-    async def update_user_by_id(self, *, update_user: UpdateUser) -> User:
-        raise NotImplementedError
+    async def update_user_by_id(self, *, update_user: UpdateUser) -> User: ...
 
-    @abstractmethod
-    async def exists_user_by_id(self, *, user_id: UserId) -> bool:
-        raise NotImplementedError
+    async def exists_user_by_id(self, *, user_id: UserId) -> bool: ...

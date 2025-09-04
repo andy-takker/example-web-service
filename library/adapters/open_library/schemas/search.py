@@ -6,7 +6,7 @@ from msgspec import Struct
 class OpenLibraryDocStruct(Struct):
     title: str
     key: str
-    author_name: Sequence[str]
+    author_name: Sequence[str] | None = None
 
 
 class OpenLibrarySearchStruct(Struct):

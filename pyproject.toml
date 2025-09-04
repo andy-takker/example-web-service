@@ -4,25 +4,27 @@ version = "0.1.0"
 description = "Example web-service"
 readme = "README.md"
 requires-python = ">=3.12,<4.0"
-authors = ["Sergey Natalenko <sergey.natalenko@mail.ru>"]
+authors = [{ name = "Sergey Natalenko", email = "sergey.natalenko@mail.ru" }]
 license = "MIT"
 dependencies = [
-    "aiomisc>=17.5.29",
-    "dishka>=1.4.2",
-    "fastapi>=0.115.6",
-    "sqlalchemy>=2.0.36",
-    "alembic>=1.13.3",
-    "asyncpg>=0.30.0",
-    "uvloop>=0.21.0",
-    "granian>=1.6.4",
-    "pydantic[email]>=2.10.3",
-    "greenlet>=3.2.3",
-    "structlog>=25.4.0",
-    "asyncly>=0.3.3",
     "aiocache>=0.12.3",
+    "alembic>=1.16.5",
+    "asyncly>=0.3.4",
+    "asyncpg>=0.30.0",
+    "dishka>=1.6.0",
+    "fastapi>=0.116.1",
+    "faststream>=0.5.48",
+    "granian>=2.5.2",
     "msgspec>=0.19.0",
+    "nats-py>=2.11.0",
+    "prometheus-client>=0.22.1",
+    "pydantic[email]>=2.11.7",
     "redis>=6.4.0",
+    "sqlalchemy[asyncio]>=2.0.43",
+    "structlog>=25.4.0",
+    "uvloop>=0.21.0",
 ]
+
 
 [dependency-groups]
 dev = [
@@ -46,6 +48,7 @@ python_functions = "test_*"
 python_classes = "TestSuite*"
 addopts = "-p no:cacheprovider"
 asyncio_default_fixture_loop_scope = "function"
+asyncio_default_test_loop_scope = "function"
 
 
 [tool.coverage.run]
@@ -54,7 +57,27 @@ source = ["library"]
 command_line = "-m pytest"
 
 [tool.coverage.report]
+fail_under = 80
 show_missing = true
+skip_covered = false
+skip_empty = true
+omit = [
+    "*/migrations/*",
+    "*/__main__.py",
+]
+exclude_also = [
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == __main__:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+    "pass",
+]
 
 [tool.coverage.xml]
 output = "coverage.xml"

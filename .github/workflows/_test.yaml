@@ -13,6 +13,9 @@ env:
   APP_REDIS_HOST: redis
   APP_REDIS_PORT: 6379
 
+  APP_NATS_HOST: nats
+  APP_NATS_PORT: 4222
+
 jobs:
   test:
     name: Run service tests with pytest
@@ -34,6 +37,11 @@ jobs:
 
       redis:
         image: redis
+
+      nats:
+        image: bitnami/nats:2.10.18
+        env:
+          NATS_EXTRA_ARGS: -js
 
     steps:
       - name: Checkout code

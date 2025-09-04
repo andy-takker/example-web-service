@@ -1,16 +1,10 @@
 import argparse
 import logging
-from dataclasses import dataclass, field
-from os import environ
 
 from alembic.config import CommandLine
 
+from library.adapters.database.config import DatabaseConfig
 from library.adapters.database.utils import make_alembic_config
-
-
-@dataclass(kw_only=True, slots=True, frozen=True)
-class DatabaseConfig:
-    master_dsn: str = field(default_factory=lambda: environ["APP_DATABASE_DSN"])
 
 
 def main() -> None:
@@ -23,7 +17,7 @@ def main() -> None:
         alembic.parser.error("Too few arguments")
         exit(128)
     else:
-        config = make_alembic_config(options, pg_url=db_config.master_dsn)
+        config = make_alembic_config(options, pg_url=db_config.dsn)
         alembic.run_cmd(config, options)
         exit()
 

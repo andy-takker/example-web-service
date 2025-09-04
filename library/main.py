@@ -1,5 +1,5 @@
-from library.presentors.rest.config import RestConfig
-from library.presentors.rest.service import RestService
+from library.config import Config
+from library.presentors.rest.service import get_fastapi_app
 
-config = RestConfig()
-app = RestService(config=config).create_application()
+config = Config()
+app = get_fastapi_app(config=config)

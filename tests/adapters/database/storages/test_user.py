@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from library.adapters.database.storages.user import UserStorage
 from library.adapters.database.tables import UserTable
 from library.adapters.database.uow import SqlalchemyUow
 from library.application.exceptions import (
@@ -18,21 +19,20 @@ from library.domains.entities.user import (
     UserId,
     UserPaginationParams,
 )
-from library.domains.interfaces.storages.user import IUserStorage
 
 UUID_1 = UUID(int=1)
 UUID_2 = UUID(int=2)
 
 
 async def test_fetch_user_by_id__not_found(
-    uow: SqlalchemyUow, user_storage: IUserStorage
+    uow: SqlalchemyUow, user_storage: UserStorage
 ):
     async with uow:
         assert await user_storage.fetch_user_by_id(user_id=UserId(UUID_1)) is None
 
 
 async def test_fetch_user_by_id__was_deleted(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     await create_db_user_factory(id=UUID_1, deleted_at=datetime.now(tz=UTC))
     async with uow:
@@ -40,7 +40,7 @@ async def test_fetch_user_by_id__was_deleted(
 
 
 async def test_fetch_user_by_id__ok(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     user = await create_db_user_factory(id=UUID_1)
     async with uow:
@@ -55,14 +55,14 @@ async def test_fetch_user_by_id__ok(
 
 
 async def test_exists_user_by_id__not_found(
-    uow: SqlalchemyUow, user_storage: IUserStorage
+    uow: SqlalchemyUow, user_storage: UserStorage
 ):
     async with uow:
         assert await user_storage.exists_user_by_id(user_id=UserId(UUID_1)) is False
 
 
 async def test_exists_user_by_id__was_deleted(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     await create_db_user_factory(id=UUID_1, deleted_at=datetime.now(tz=UTC))
     async with uow:
@@ -70,7 +70,7 @@ async def test_exists_user_by_id__was_deleted(
 
 
 async def test_exists_user_by_id__ok(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     await create_db_user_factory(id=UUID_1)
     async with uow:
@@ -78,7 +78,7 @@ async def test_exists_user_by_id__ok(
 
 
 async def test_fetch_user_list__ok(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     users = [
         await create_db_user_factory(id=UUID_1),
@@ -101,7 +101,7 @@ async def test_fetch_user_list__ok(
 
 
 async def test_user_list__with_offset(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     await create_db_user_factory(id=UUID_1)
     user = await create_db_user_factory(id=UUID_2)
@@ -120,7 +120,7 @@ async def test_user_list__with_offset(
 
 
 async def test_user_list__with_limit(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     user = await create_db_user_factory(id=UUID_1)
     await create_db_user_factory(id=UUID_2)
@@ -140,7 +140,7 @@ async def test_user_list__with_limit(
 
 
 async def test_count_users__ok(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     await create_db_user_factory(id=UUID_1)
     await create_db_user_factory(id=UUID_2)
@@ -152,7 +152,7 @@ async def test_count_users__ok(
 
 
 async def test_create_user__ok(
-    uow: SqlalchemyUow, user_storage: IUserStorage, session: AsyncSession
+    uow: SqlalchemyUow, user_storage: UserStorage, session: AsyncSession
 ):
     async with uow:
         user = await user_storage.create_user(
@@ -175,7 +175,7 @@ async def test_create_user__ok(
 
 
 async def test_create_user__duplicate_username(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     await create_db_user_factory(id=UUID_1, username="username")
     with pytest.raises(EntityAlreadyExistsException):
@@ -189,7 +189,7 @@ async def test_create_user__duplicate_username(
 
 
 async def test_create_user__duplicate_email(
-    uow: SqlalchemyUow, user_storage: IUserStorage, create_db_user_factory
+    uow: SqlalchemyUow, user_storage: UserStorage, create_db_user_factory
 ):
     await create_db_user_factory(id=UUID_1, email="email@example.com")
     with pytest.raises(EntityAlreadyExistsException):
@@ -204,7 +204,7 @@ async def test_create_user__duplicate_email(
 
 async def test_delete_user_by_id__ok(
     uow: SqlalchemyUow,
-    user_storage: IUserStorage,
+    user_storage: UserStorage,
     create_db_user_factory,
     session: AsyncSession,
 ):
@@ -218,7 +218,7 @@ async def test_delete_user_by_id__ok(
 
 
 async def test_delete_user_by_id__not_found(
-    uow: SqlalchemyUow, user_storage: IUserStorage
+    uow: SqlalchemyUow, user_storage: UserStorage
 ):
     async with uow:
         assert await user_storage.delete_user_by_id(user_id=UserId(UUID_1)) is None
@@ -226,7 +226,7 @@ async def test_delete_user_by_id__not_found(
 
 async def test_update_user_by_id__ok(
     uow: SqlalchemyUow,
-    user_storage: IUserStorage,
+    user_storage: UserStorage,
     create_db_user_factory,
     session: AsyncSession,
 ):
@@ -244,7 +244,7 @@ async def test_update_user_by_id__ok(
 
 
 async def test_update_user_by_id__not_found(
-    uow: SqlalchemyUow, user_storage: IUserStorage
+    uow: SqlalchemyUow, user_storage: UserStorage
 ):
     with pytest.raises(EntityNotFoundException):
         async with uow:
