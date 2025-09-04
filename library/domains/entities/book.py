@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import NewType
 from uuid import UUID
 
-from library.application.entities import UNSET, Unset
+from library.application.entities import UNSET
 
 BookId = NewType("BookId", UUID)
 
@@ -41,16 +41,16 @@ class CreateBook:
 @dataclass(frozen=True, kw_only=True, slots=True)
 class UpdateBook:
     id: BookId
-    title: str | Unset = UNSET
-    year: int | Unset = UNSET
-    author: str | Unset = UNSET
+    title: str = UNSET
+    year: int = UNSET
+    author: str = UNSET
 
     def to_dict(self) -> Mapping[str, int | str]:
         values: dict[str, int | str] = {}
-        if not isinstance(self.title, Unset):
+        if self.title is not UNSET:
             values["title"] = self.title
-        if not isinstance(self.year, Unset):
+        if self.year is not UNSET:
             values["year"] = self.year
-        if not isinstance(self.author, Unset):
+        if self.author is not UNSET:
             values["author"] = self.author
         return values

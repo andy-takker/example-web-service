@@ -10,7 +10,7 @@ from library.adapters.database.utils import make_alembic_config
 
 @dataclass(kw_only=True, slots=True, frozen=True)
 class DatabaseConfig:
-    master_dsn: str = field(default_factory=lambda: environ["APP_DB_DSN"])
+    master_dsn: str = field(default_factory=lambda: environ["APP_DATABASE_DSN"])
 
 
 def main() -> None:

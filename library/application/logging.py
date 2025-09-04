@@ -84,5 +84,5 @@ class LoggingConfig:
         default_factory=lambda: LogLevel(environ.get("APP_LOG_LEVEL", "DEBUG").upper())
     )
     use_json: bool = field(
-        default_factory=lambda: environ.get("APP_LOG_JSON", "false").lower() == "true"
+        default_factory=lambda: environ.get("APP_LOG_JSON", "true").lower() == "true"
     )

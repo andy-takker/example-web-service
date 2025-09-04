@@ -3,6 +3,16 @@ name: Run auto tests
 on:
   workflow_call:
 
+env:
+  APP_DATABASE_HOST: db
+  APP_DATABASE_PORT: 5432
+  APP_DATABASE_USER: testuser
+  APP_DATABASE_PASSWORD: testpassword
+  APP_DATABASE_NAME: testdb
+
+  APP_REDIS_HOST: redis
+  APP_REDIS_PORT: 6379
+
 jobs:
   test:
     name: Run service tests with pytest
@@ -13,14 +23,17 @@ jobs:
         image: postgres:16
         env:
           TZ: UTC
-          POSTGRES_USER: testuser
-          POSTGRES_DB: testdb
-          POSTGRES_PASSWORD: testpass
+          POSTGRES_USER: ${{ env.APP_DATABASE_USER }}
+          POSTGRES_DB: ${{ env.APP_DATABASE_NAME }}
+          POSTGRES_PASSWORD: ${{ env.APP_DATABASE_PASSWORD }}
         options: >-
           --health-cmd "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+      redis:
+        image: redis
 
     steps:
       - name: Checkout code
@@ -36,5 +49,9 @@ jobs:
 
       - name: Run tests
         run: make test-ci
-        env:
-          APP_DB_DSN: postgresql+asyncpg://testuser:testpass@db:5432/testdb
+
+      - name: Get Cover
+        uses: orgoro/coverage@v3.2
+        with:
+            coverageFile: ./coverage.xml
+            token: ${{ secrets.GITHUB_TOKEN }}

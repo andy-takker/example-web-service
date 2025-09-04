@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 import pytest
-from dirty_equals import IsDict, IsStr
+from dirty_equals import IsDatetime, IsDict, IsUUID
 from httpx import AsyncClient
 from sqlalchemy import select
 
@@ -49,11 +49,11 @@ async def test_create_user__ok__format(client: AsyncClient):
         },
     )
     assert response.json() == {
-        "id": IsStr(),
+        "id": IsUUID(),
         "username": "username",
         "email": "email@example.com",
-        "created_at": IsStr(),
-        "updated_at": IsStr(),
+        "created_at": IsDatetime(iso_string=True),
+        "updated_at": IsDatetime(iso_string=True),
     }
 
 
@@ -72,8 +72,8 @@ async def test_create_user__ok__check_db(client: AsyncClient, session):
             "id": str(db_user.id),
             "username": db_user.username,
             "email": db_user.email,
-            "created_at": IsStr(),
-            "updated_at": IsStr(),
+            "created_at": IsDatetime(iso_string=True),
+            "updated_at": IsDatetime(iso_string=True),
         }
     )
 

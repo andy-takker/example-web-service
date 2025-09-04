@@ -45,10 +45,9 @@ async def fetch_users(
     fetch_user_list: FromDishka[FetchUserListQuery],
     uow: FromDishka[AbstractUow],
 ) -> UserPaginationSchema:
-    async with uow:
-        users = await fetch_user_list.execute(
-            input_dto=UserPaginationParams(limit=params.limit, offset=params.offset)
-        )
+    users = await fetch_user_list.execute(
+        input_dto=UserPaginationParams(limit=params.limit, offset=params.offset)
+    )
     return UserPaginationSchema.model_validate(users)
 
 
@@ -65,13 +64,12 @@ async def create_user(
     create_user: FromDishka[CreateUserCommand],
     uow: FromDishka[AbstractUow],
 ) -> UserSchema:
-    async with uow:
-        user = await create_user.execute(
-            input_dto=CreateUser(
-                username=create_user_data.username,
-                email=create_user_data.email,
-            ),
-        )
+    user = await create_user.execute(
+        input_dto=CreateUser(
+            username=create_user_data.username,
+            email=create_user_data.email,
+        ),
+    )
     return UserSchema.model_validate(user)
 
 
@@ -88,8 +86,7 @@ async def fetch_user(
     fetch_user_by_id: FromDishka[FetchUserByIdQuery],
     uow: FromDishka[AbstractUow],
 ) -> UserSchema:
-    async with uow:
-        user = await fetch_user_by_id.execute(input_dto=UserId(user_id))
+    user = await fetch_user_by_id.execute(input_dto=UserId(user_id))
     return UserSchema.model_validate(user)
 
 
@@ -105,18 +102,16 @@ async def update_user_by_id(
     update_user_data: UpdateUserSchema,
     *,
     update_user: FromDishka[UpdateUserByIdCommand],
-    uow: FromDishka[AbstractUow],
 ) -> UserSchema:
     values = update_user_data.model_dump(exclude_unset=True)
     if not values:
         raise EmptyPayloadException(message="No values to update")
-    async with uow:
-        user = await update_user.execute(
-            input_dto=UpdateUser(
-                id=UserId(user_id),
-                **values,
-            ),
-        )
+    user = await update_user.execute(
+        input_dto=UpdateUser(
+            id=UserId(user_id),
+            **values,
+        ),
+    )
     return UserSchema.model_validate(user)
 
 
@@ -132,5 +127,4 @@ async def delete_user_by_id(
     delete_user_by_id: FromDishka[DeleteUserByIdCommand],
     uow: FromDishka[AbstractUow],
 ) -> None:
-    async with uow:
-        await delete_user_by_id.execute(input_dto=UserId(user_id))
+    await delete_user_by_id.execute(input_dto=UserId(user_id))
