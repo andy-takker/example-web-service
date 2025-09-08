@@ -1,7 +1,6 @@
 import logging
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
 from typing import Final
 
 from dishka import make_async_container
@@ -19,8 +18,9 @@ from library.application.exceptions import (
     LibraryException,
 )
 from library.application.logging import setup_logging
+from library.config import Config
 from library.domains.di import DomainProvider
-from library.presentors.rest.config import RestConfig
+from library.presentors.faststream.app_factory import get_faststream_app
 from library.presentors.rest.routers.api.router import router as api_router
 from library.presentors.rest.routers.api.v1.exception_handlers import (
     empty_payload_exception_handler,
@@ -44,75 +44,66 @@ EXCEPTION_HANDLERS: Final[ExceptionHandlersType] = (
 )
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class RestService:
-    config: RestConfig
+def get_fastapi_app(config: Config) -> FastAPI:
+    setup_logging(
+        log_level=config.log.log_level,
+        use_json=config.log.use_json,
+    )
+    faststream_app = get_faststream_app(config=config)
 
-    def create_application(self) -> FastAPI:
-        setup_logging(
-            log_level=self.config.log.log_level, use_json=self.config.log.use_json
-        )
-        app = FastAPI(
-            debug=self.config.app.debug,
-            title=self.config.app.title,
-            description=self.config.app.description,
-            version=self.config.app.version,
-            openapi_url="/docs/openapi.json",
-            docs_url="/docs/swagger",
-            redoc_url="/docs/redoc",
-            license_info={
-                "name": "GNU 3.0",
-                "url": "https://www.gnu.org/licenses/gpl-3.0.html",
-            },
-            contact={
-                "name": "Sergey Natalenko",
-                "url": "https://github.com/andy-takker",
-                "email": "sergey.natalenko@mail.ru",
-            },
-            lifespan=lifespan,
-        )
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        await faststream_app.start()
+        yield
+        await faststream_app.stop()
+        await app.state.dishka_container.close()
 
-        self.set_middlewares(app=app)
-        self.set_routes(app=app)
-        self.set_exceptions(app=app)
-        self.set_dependencies(app=app)
+    app = FastAPI(
+        debug=config.app.debug,
+        title=config.app.title,
+        description=config.app.description,
+        version=config.app.version,
+        openapi_url="/docs/openapi.json",
+        docs_url="/docs/swagger",
+        redoc_url="/docs/redoc",
+        license_info={
+            "name": "GNU 3.0",
+            "url": "https://www.gnu.org/licenses/gpl-3.0.html",
+        },
+        contact={
+            "name": "Sergey Natalenko",
+            "url": "https://github.com/andy-takker",
+            "email": "sergey.natalenko@mail.ru",
+        },
+        lifespan=lifespan,
+    )
 
-        log.info("REST service app configured")
-        return app
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-    def set_middlewares(self, app: FastAPI) -> None:
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
+    app.include_router(api_router)
 
-    def set_routes(self, app: FastAPI) -> None:
-        app.include_router(api_router)
+    for exception, handler in EXCEPTION_HANDLERS:
+        app.add_exception_handler(exception, handler)
 
-    def set_exceptions(self, app: FastAPI) -> None:
-        for exception, handler in EXCEPTION_HANDLERS:
-            app.add_exception_handler(exception, handler)
+    container = make_async_container(
+        DatabaseProvider(
+            dsn=config.database.dsn,
+            debug=config.app.debug,
+            max_overflow=config.database.max_overflow,
+            pool_size=config.database.pool_size,
+            pool_timeout=config.database.pool_timeout,
+        ),
+        DomainProvider(),
+        OpenLibraryProvider(config=config.open_library),
+        RedisProvider(config=config.redis),
+    )
+    setup_dishka(container=container, app=app)
 
-    def set_dependencies(self, app: FastAPI) -> None:
-        container = make_async_container(
-            DatabaseProvider(
-                dsn=self.config.database.dsn,
-                debug=self.config.app.debug,
-                max_overflow=self.config.database.max_overflow,
-                pool_size=self.config.database.pool_size,
-                pool_timeout=self.config.database.pool_timeout,
-            ),
-            DomainProvider(),
-            OpenLibraryProvider(config=self.config.open_library),
-            RedisProvider(config=self.config.redis),
-        )
-        setup_dishka(container=container, app=app)
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    yield
-    await app.state.dishka_container.close()
+    log.info("REST service app configured")
+    return app

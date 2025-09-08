@@ -38,6 +38,7 @@ class OpenLibraryClient(BaseHttpClient):
                     authors=book.author_name,
                 )
                 for book in result.docs
+                if book.author_name is not None
             ],
             total=result.num_found,
             start=result.start,

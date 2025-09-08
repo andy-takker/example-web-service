@@ -54,3 +54,8 @@ class UpdateBook:
         if self.author is not UNSET:
             values["author"] = self.author
         return values
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class UploadBooks:
+    queries: Sequence[str]

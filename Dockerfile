@@ -18,11 +18,9 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-RUN pip install -U pip poetry && poetry config virtualenvs.create false
-
-RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=poetry.lock,target=poetry.lock \
-    poetry install --no-interaction --no-ansi --no-dev
+RUN pip install -U pip uv
+COPY pyproject.toml uv.lock /app/
+RUN uv sync --no-dev --locked
 
 USER appuser
 

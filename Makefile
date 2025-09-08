@@ -11,7 +11,7 @@ develop: clean_dev ##@Develop Create virtualenv
 local: ##@Develop Run dev containers for test
 	docker compose -f docker-compose.dev.yaml up --force-recreate --renew-anon-volumes --build
 
-local_down: ##@Develop Stop dev containers with delete volumes
+local-down: ##@Develop Stop dev containers with delete volumes
 	docker compose -f docker-compose.dev.yaml down -v
 
 develop-ci: ##@Develop Create virtualenv for CI

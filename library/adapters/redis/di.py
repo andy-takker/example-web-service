@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterator
+
 from aiocache import BaseCache
 from dishka import BaseScope, Provider, Scope, provide
 from dishka.entities.component import Component
@@ -17,8 +19,10 @@ class RedisProvider(Provider):
         super().__init__(scope, component)
 
     @provide(scope=Scope.APP)
-    def redis_cache(self) -> BaseCache:
-        return get_redis_cache(
+    async def redis_cache(self) -> AsyncIterator[BaseCache]:
+        redis_cache = get_redis_cache(
             host=self._config.host,
             port=self._config.port,
         )
+        yield redis_cache
+        await redis_cache.close()

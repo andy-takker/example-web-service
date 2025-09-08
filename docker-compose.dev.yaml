@@ -3,6 +3,7 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+
   db:
     image: postgres:16
     ports:
@@ -11,3 +12,12 @@ services:
       - POSTGRES_USER=library
       - POSTGRES_PASSWORD=library
       - POSTGRES_DB=library
+
+  broker:
+    image: bitnami/nats:2.10.18
+    environment:
+      NATS_EXTRA_ARGS: "-js --http_port 8222"
+    ports:
+      - 4222:4222
+      - 6222:6222
+      - 8222:8222

@@ -17,7 +17,7 @@ from library.adapters.open_library.reduced import ReducedOpenLibraryClient
 from library.domains.interfaces.clients.open_library import IOpenLibraryClient
 
 
-@pytest.fixture
+@pytest.fixture()
 async def open_library_service() -> AsyncIterator[MockService]:
     routes = [
         MockRoute("GET", "/search.json", "search"),

@@ -13,6 +13,7 @@ from library.domains.use_cases.commands.book.delete_book_by_id import (
 from library.domains.use_cases.commands.book.update_book_by_id import (
     UpdateBookByIdCommand,
 )
+from library.domains.use_cases.commands.book.upload_books import UploadBooksCommand
 from library.domains.use_cases.commands.user.create_user import CreateUserCommand
 from library.domains.use_cases.commands.user.delete_user_by_id import (
     DeleteUserByIdCommand,
@@ -97,6 +98,19 @@ class DomainProvider(Provider):
         self, uow: AbstractUow, user_service: UserService
     ) -> UpdateUserByIdCommand:
         return UpdateUserByIdCommand(uow=uow, user_service=user_service)
+
+    @provide()
+    def upload_books_command(
+        self,
+        uow: AbstractUow,
+        book_service: BookService,
+        open_library_client: IOpenLibraryClient,
+    ) -> UploadBooksCommand:
+        return UploadBooksCommand(
+            uow=uow,
+            book_service=book_service,
+            open_library_client=open_library_client,
+        )
 
     @provide()
     def open_library_search_query(

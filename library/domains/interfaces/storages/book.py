@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from collections.abc import Sequence
 from typing import Protocol
 
@@ -12,30 +11,20 @@ from library.domains.entities.book import (
 
 
 class IBookStorage(Protocol):
-    @abstractmethod
-    async def fetch_book_by_id(self, *, book_id: BookId) -> Book | None:
-        raise NotImplementedError
+    async def fetch_book_by_id(self, *, book_id: BookId) -> Book | None: ...
 
-    @abstractmethod
-    async def count_books(self, *, params: BookPaginationParams) -> int:
-        raise NotImplementedError
+    async def count_books(self, *, params: BookPaginationParams) -> int: ...
 
-    @abstractmethod
-    async def fetch_book_list(self, *, params: BookPaginationParams) -> Sequence[Book]:
-        raise NotImplementedError
+    async def fetch_book_list(
+        self, *, params: BookPaginationParams
+    ) -> Sequence[Book]: ...
 
-    @abstractmethod
-    async def create_book(self, *, book: CreateBook) -> Book:
-        raise NotImplementedError
+    async def create_book(self, *, book: CreateBook) -> Book: ...
 
-    @abstractmethod
-    async def delete_book_by_id(self, *, book_id: BookId) -> None:
-        raise NotImplementedError
+    async def delete_book_by_id(self, *, book_id: BookId) -> None: ...
 
-    @abstractmethod
-    async def update_book_by_id(self, *, update_book: UpdateBook) -> Book:
-        raise NotImplementedError
+    async def update_book_by_id(self, *, update_book: UpdateBook) -> Book: ...
 
-    @abstractmethod
-    async def exists_book_by_id(self, *, book_id: BookId) -> bool:
-        raise NotImplementedError
+    async def exists_book_by_id(self, *, book_id: BookId) -> bool: ...
+
+    async def save_bulk_books(self, *, books: Sequence[CreateBook]) -> None: ...

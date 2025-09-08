@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from typing import NoReturn
 
 from sqlalchemy import exists, func, insert, select, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import DBAPIError, IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -157,6 +158,27 @@ class BookStorage:
             created_at=result["created_at"],
             updated_at=result["updated_at"],
         )
+
+    async def save_bulk_books(self, *, books: Sequence[CreateBook]) -> None:
+        stmt = pg_insert(BookTable).values(
+            [
+                {
+                    "title": book.title,
+                    "year": book.year,
+                    "author": book.author,
+                }
+                for book in books
+            ]
+        )
+        stmt = stmt.on_conflict_do_nothing(
+            index_elements=[
+                BookTable.title,
+                BookTable.year,
+                BookTable.author,
+            ],
+            index_where=BookTable.deleted_at.is_(None),
+        )
+        await self._session.execute(stmt)
 
     def _raise_error(self, e: DBAPIError) -> NoReturn:
         constraint = e.__cause__.__cause__.constraint_name  # type: ignore[union-attr]

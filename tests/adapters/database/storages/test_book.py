@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from library.adapters.database.storages.book import BookStorage
 from library.adapters.database.tables import BookTable
 from library.adapters.database.uow import SqlalchemyUow
 from library.application.exceptions import EntityNotFoundException
@@ -15,21 +16,20 @@ from library.domains.entities.book import (
     CreateBook,
     UpdateBook,
 )
-from library.domains.interfaces.storages.book import IBookStorage
 
 UUID_1 = UUID(int=1)
 UUID_2 = UUID(int=2)
 
 
 async def test_fetch_book_by_id__not_found(
-    uow: SqlalchemyUow, book_storage: IBookStorage
+    uow: SqlalchemyUow, book_storage: BookStorage
 ):
     async with uow:
         assert await book_storage.fetch_book_by_id(book_id=BookId(UUID_1)) is None
 
 
 async def test_fetch_book_by_id__was_deleted(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book
 ):
     await create_book(id=UUID_1, deleted_at=datetime.now(tz=UTC))
     async with uow:
@@ -37,7 +37,7 @@ async def test_fetch_book_by_id__was_deleted(
 
 
 async def test_fetch_book_by_id__ok(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book
 ):
     book = await create_book(id=UUID_1)
     async with uow:
@@ -53,14 +53,14 @@ async def test_fetch_book_by_id__ok(
 
 
 async def test_exists_book_by_id__not_found(
-    uow: SqlalchemyUow, book_storage: IBookStorage
+    uow: SqlalchemyUow, book_storage: BookStorage
 ):
     async with uow:
         assert await book_storage.exists_book_by_id(book_id=BookId(UUID_1)) is False
 
 
 async def test_exists_book_by_id__was_deleted(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book
 ):
     await create_book(id=UUID_1, deleted_at=datetime.now(tz=UTC))
     async with uow:
@@ -68,7 +68,7 @@ async def test_exists_book_by_id__was_deleted(
 
 
 async def test_exists_book_by_id__ok(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book
 ):
     await create_book(id=UUID_1)
     async with uow:
@@ -76,7 +76,7 @@ async def test_exists_book_by_id__ok(
 
 
 async def test_fetch_book_list__ok(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book
 ):
     books = [
         await create_book(id=UUID_1),
@@ -100,7 +100,7 @@ async def test_fetch_book_list__ok(
 
 
 async def test_book_list__with_offset(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book
 ):
     await create_book(id=UUID_1)
     book = await create_book(id=UUID_2)
@@ -120,7 +120,7 @@ async def test_book_list__with_offset(
 
 
 async def test_book_list__with_limit(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book
 ):
     book = await create_book(id=UUID_1)
     await create_book(id=UUID_2)
@@ -140,7 +140,7 @@ async def test_book_list__with_limit(
 
 
 async def test_count_books__ok(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book
 ):
     await create_book(id=UUID_1)
     await create_book(id=UUID_2)
@@ -153,7 +153,7 @@ async def test_count_books__ok(
         )
 
 
-async def test_create_book__ok(uow: SqlalchemyUow, book_storage: IBookStorage, session):
+async def test_create_book__ok(uow: SqlalchemyUow, book_storage: BookStorage, session):
     async with uow:
         book = await book_storage.create_book(
             book=CreateBook(
@@ -176,7 +176,7 @@ async def test_create_book__ok(uow: SqlalchemyUow, book_storage: IBookStorage, s
 
 
 async def test_delete_book_by_id__ok(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book, session: AsyncSession
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book, session: AsyncSession
 ):
     book = await create_book(id=UUID_1)
 
@@ -190,14 +190,14 @@ async def test_delete_book_by_id__ok(
 
 
 async def test_delete_book_by_id__not_found(
-    uow: SqlalchemyUow, book_storage: IBookStorage
+    uow: SqlalchemyUow, book_storage: BookStorage
 ):
     async with uow:
         assert await book_storage.delete_book_by_id(book_id=BookId(UUID_1)) is None
 
 
 async def test_update_book_by_id__ok(
-    uow: SqlalchemyUow, book_storage: IBookStorage, create_book, session: AsyncSession
+    uow: SqlalchemyUow, book_storage: BookStorage, create_book, session: AsyncSession
 ):
     book = await create_book(id=UUID_1, title="Old title")
 
@@ -215,10 +215,30 @@ async def test_update_book_by_id__ok(
 
 
 async def test_update_book_by_id__not_found(
-    uow: SqlalchemyUow, book_storage: IBookStorage
+    uow: SqlalchemyUow, book_storage: BookStorage
 ):
     async with uow:
         with pytest.raises(EntityNotFoundException):
             await book_storage.update_book_by_id(
                 update_book=UpdateBook(id=BookId(UUID_1), title="New title")
-            ) is None
+            )
+
+
+async def test_save_bulk_books__ok(
+    uow: SqlalchemyUow, book_storage: BookStorage, session: AsyncSession
+):
+    books = [
+        CreateBook(title="Book 1", year=1, author="Author 1"),
+        CreateBook(title="Book 2", year=2, author="Author 2"),
+    ]
+    async with uow:
+        await book_storage.save_bulk_books(books=books)
+
+    stmt = select(BookTable.title, BookTable.year, BookTable.author).order_by(
+        BookTable.title
+    )
+    result = await session.execute(stmt)
+    assert result.all() == [
+        ("Book 1", 1, "Author 1"),
+        ("Book 2", 2, "Author 2"),
+    ]
