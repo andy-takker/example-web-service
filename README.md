@@ -1,22 +1,39 @@
 # Example Web Service
 
-Example REST web service for internet library with:
+Example web service for an internet library, built as a reference for clean,
+layered Python services with both a REST API and async messaging in a single app.
 
-- clean architecture with interfaces, layers and entities
+## Features
+
+- Layered architecture (`domain` / `adapters` / `presentors` / `application`)
+  with import boundaries enforced by [import-linter](https://github.com/seddonym/import-linter)
 - Dependency Injection with [dishka](https://github.com/reagento/dishka)
-- REST API based on [fastapi](https://github.com/fastapi/fastapi)
-- async API based on [faststream](https://github.com/ag2ai/faststream)
-- auto tests with [pytest](https://docs.pytest.org/en/stable/) (also with integration tests for external API with [asyncly](https://github.com/andy-takker/asyncly))
-- formatting and linting with [ruff](https://github.com/astral-sh/ruff) and [mypy](https://github.com/python/mypy)
+- REST API based on [litestar](https://github.com/litestar-org/litestar)
+- Async pub/sub messaging with [faststream](https://github.com/ag2ai/faststream)
+  over NATS JetStream
+- External API integration ([Open Library](https://openlibrary.org/)) with
+  caching and response reduction via [asyncly](https://github.com/andy-takker/asyncly)
+- Database layer with [SQLAlchemy](https://www.sqlalchemy.org/) + asyncpg,
+  the Unit of Work pattern, and Alembic migrations
+- Redis for caching
+- Observability: Prometheus metrics, structured logging with
+  [structlog](https://www.structlog.org/), and optional
+  [Sentry](https://sentry.io/) integration
+- Rate limiting and CORS out of the box
+- Auto tests with [pytest](https://docs.pytest.org/en/stable/) — unit tests on
+  fakes plus integration tests against containerized services and external APIs
+- Formatting and linting with [ruff](https://github.com/astral-sh/ruff) and
+  [mypy](https://github.com/python/mypy)
 - Dockerfile with best practices
-- CI/CD with Github Workflows with separated actions
-- [pre-commit](https://github.com/pre-commit/pre-commit) features
+- CI/CD with GitHub Workflows split into separate actions
+- [pre-commit](https://github.com/pre-commit/pre-commit) hooks
 
-## Working with repos
+## Working with the repo
 
 ### How to install dependencies?
 
-Creating new venv in project folder and install all dependencies with poetry:
+Create a new venv in the project folder and install all dependencies with
+[uv](https://github.com/astral-sh/uv):
 
 ```bash
 make develop
@@ -24,15 +41,33 @@ make develop
 
 ### How to run dev containers for testing?
 
-Start postgres container described in `docker-compose.dev.yaml` from scratch:
+Start the Postgres, Redis, and NATS containers described in
+`docker-compose.dev.yaml` from scratch:
 
 ```bash
 make local
 ```
 
+Stop them and drop the volumes:
+
+```bash
+make local-down
+```
+
+### How to run the service?
+
+```bash
+python -m library
+```
+
+The API is served on `http://127.0.0.1:8000` (see `.env` for host/port).
+OpenAPI docs are available at `/docs/swagger` and `/docs/redoc`, Prometheus
+metrics at `/metrics`.
+
 ### How to run tests?
 
-The tests must be run after the dependencies are installed and when the `make local` process is running separately:
+Run the tests after dependencies are installed and while `make local` is running
+in a separate terminal:
 
 ```bash
 pytest -vx ./tests
@@ -40,36 +75,44 @@ pytest -vx ./tests
 
 ### How to apply all actual migrations?
 
-Remember that to connect to the database, you must specify the environment
-variables `APP_DATABASE_HOST`, `APP_DATABASE_PORT`, `APP_DATABASE_USER`,
+Remember that to connect to the database you must set the environment variables
+`APP_DATABASE_HOST`, `APP_DATABASE_PORT`, `APP_DATABASE_USER`,
 `APP_DATABASE_PASSWORD`, `APP_DATABASE_NAME`.
 
 ```bash
 python -m library.adapters.database upgrade head
 ```
 
-### How to generate new migration?
+### How to generate a new migration?
 
-Don't forget to apply migrations with the above command first.
+Apply the existing migrations with the command above first.
 
 ```bash
 python -m library.adapters.database revision --autogenerate -m "Your message"
 ```
 
-### How to work with repo in CI?
+### How to check import boundaries?
 
-Separate commands are written in the `Makefile` to run dependency
-installation, checks, and testing. They have the suffix `-ci`
+import-linter enforces the architectural layering (the domain must not import
+adapters or presentors; adapters must not import presentors; production code must
+not import tests):
+
+```bash
+make import-linter
+```
+
+### How to work with the repo in CI?
+
+Separate commands are written in the `Makefile` to run dependency installation,
+checks, and testing. They have the `-ci` suffix:
 
 ```bash
 make develop-ci  # install dependencies
-make lint-ci     # run linters - ruff and mypy
+make lint-ci     # run linters - ruff, mypy and import-linter
 make test-ci     # run tests with pytest and coverage
 ```
 
 ## Routes
-
-List of routes:
 
 ### Books
 
@@ -85,16 +128,16 @@ DELETE  /api/v1/books/{book_id}/  Delete Book by ID
 
 ```api
 GET     /api/v1/users/             Fetch Users
-POST    /api/v1/users/             Create Book
+POST    /api/v1/users/             Create User
 GET     /api/v1/users/{user_id}/   Fetch User by ID
 PATCH   /api/v1/users/{user_id}/   Update User by ID
 DELETE  /api/v1/users/{user_id}/   Delete User by ID
 ```
 
-### User Books
+### Open Library
 
 ```api
-GET     /api/v1/users/{user_id}/books/                   Get user books
-POST    /api/v1/users/{user_id}/books/{book_id}/issue/   Issue Book to User
-POST    /api/v1/users/{user_id}/books/{book_id}/return/  Return Book from User
+GET     /api/v1/open-library/search   Search books in Open Library
 ```
+</content>
+</invoke>
