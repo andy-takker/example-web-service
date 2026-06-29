@@ -14,7 +14,7 @@ from library.adapters.open_library.cached import CachedOpenLibraryClient
 from library.adapters.open_library.client import OpenLibraryClient
 from library.adapters.open_library.config import OpenLibraryConfig
 from library.adapters.open_library.reduced import ReducedOpenLibraryClient
-from library.domains.interfaces.clients.open_library import IOpenLibraryClient
+from library.domain.interfaces.clients.open_library import IOpenLibraryClient
 
 
 @pytest.fixture()

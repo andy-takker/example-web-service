@@ -1,6 +1,6 @@
 PROJECT_NAME = library
 TEST_FOLDER_NAME = tests
-PYTHON_VERSION = 3.12
+PYTHON_VERSION = 3.13
 
 develop: clean_dev ##@Develop Create virtualenv
 	python$(PYTHON_VERSION) -m venv .venv

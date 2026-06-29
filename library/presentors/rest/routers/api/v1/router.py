@@ -1,16 +1,20 @@
-from fastapi import APIRouter
+from litestar import Router
 
 from library.presentors.rest.routers.api.v1.endpoints.books import (
-    router as books_router,
+    BooksController,
 )
 from library.presentors.rest.routers.api.v1.endpoints.open_library import (
-    router as open_library_router,
+    OpenLibraryController,
 )
 from library.presentors.rest.routers.api.v1.endpoints.users import (
-    router as users_router,
+    UsersController,
 )
 
-router = APIRouter(prefix="/v1")
-router.include_router(users_router)
-router.include_router(books_router)
-router.include_router(open_library_router)
+router = Router(
+    path="/v1",
+    route_handlers=[
+        BooksController,
+        OpenLibraryController,
+        UsersController,
+    ],
+)

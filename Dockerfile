@@ -1,10 +1,12 @@
 
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.13
 
 FROM python:${PYTHON_VERSION}-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+
+ENV UV_PROJECT_ENVIRONMENT="/usr/local/"
 
 WORKDIR /app
 
@@ -20,7 +22,7 @@ RUN adduser \
 
 RUN pip install -U pip uv
 COPY pyproject.toml uv.lock /app/
-RUN uv sync --no-dev --locked
+RUN uv sync --no-dev --frozen
 
 USER appuser
 

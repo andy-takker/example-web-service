@@ -20,7 +20,7 @@ jobs:
   test:
     name: Run service tests with pytest
     runs-on: ubuntu-22.04
-    container: python:3.12
+    container: python:3.13
     services:
       db:
         image: postgres:16
@@ -47,10 +47,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup python 3.12
+      - name: Setup python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: make develop-ci

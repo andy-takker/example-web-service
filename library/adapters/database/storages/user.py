@@ -13,7 +13,7 @@ from library.application.exceptions import (
     EntityNotFoundException,
     LibraryException,
 )
-from library.domains.entities.user import (
+from library.domain.entities.user import (
     CreateUser,
     UpdateUser,
     User,

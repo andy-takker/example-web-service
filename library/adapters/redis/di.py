@@ -1,28 +1,20 @@
 from collections.abc import AsyncIterator
 
 from aiocache import BaseCache
-from dishka import BaseScope, Provider, Scope, provide
-from dishka.entities.component import Component
+from dishka import Provider, Scope, provide
 
 from library.adapters.redis.cache import get_redis_cache
 from library.adapters.redis.config import RedisConfig
 
 
 class RedisProvider(Provider):
-    def __init__(
-        self,
-        config: RedisConfig,
-        scope: BaseScope | None = None,
-        component: Component | None = None,
-    ):
-        self._config = config
-        super().__init__(scope, component)
+    scope = Scope.APP
 
-    @provide(scope=Scope.APP)
-    async def redis_cache(self) -> AsyncIterator[BaseCache]:
+    @provide()
+    async def redis_cache(self, config: RedisConfig) -> AsyncIterator[BaseCache]:
         redis_cache = get_redis_cache(
-            host=self._config.host,
-            port=self._config.port,
+            host=config.host,
+            port=config.port,
         )
         yield redis_cache
         await redis_cache.close()

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 
-from library.domains.uow import AbstractUow
+from library.domain.uow import AbstractUow
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,7 @@ name = "library"
 version = "0.1.0"
 description = "Example web-service"
 readme = "README.md"
-requires-python = ">=3.12,<4.0"
+requires-python = ">=3.13,<4.0"
 authors = [{ name = "Sergey Natalenko", email = "sergey.natalenko@mail.ru" }]
 license = "MIT"
 dependencies = [
@@ -12,19 +12,20 @@ dependencies = [
     "asyncly>=0.3.4",
     "asyncpg>=0.30.0",
     "dishka>=1.6.0",
-    "fastapi>=0.116.1",
+    "dishka-faststream>=0.6.0",
     "faststream>=0.5.48",
-    "granian>=2.5.2",
+    "litestar[jwt,prometheus,structlog]>=2.21.0",
     "msgspec>=0.19.0",
     "nats-py>=2.11.0",
     "prometheus-client>=0.22.1",
     "pydantic[email]>=2.11.7",
     "redis>=6.4.0",
+    "sentry-sdk>=2.53.0",
     "sqlalchemy[asyncio]>=2.0.43",
     "structlog>=25.4.0",
+    "uvicorn>=0.41.0",
     "uvloop>=0.21.0",
 ]
-
 
 [dependency-groups]
 dev = [
@@ -40,6 +41,13 @@ dev = [
     "httpx>=0.28.1",
     "pytest-repeat>=0.9.4",
 ]
+
+[tool.uv]
+package = false
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

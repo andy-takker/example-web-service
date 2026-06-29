@@ -14,7 +14,7 @@ from library.application.exceptions import (
     EntityNotFoundException,
     LibraryException,
 )
-from library.domains.entities.book import (
+from library.domain.entities.book import (
     Book,
     BookId,
     BookPaginationParams,
@@ -96,9 +96,9 @@ class BookStorage:
         stmt = (
             insert(BookTable)
             .values(
-                title=book.title,
+                title=book.title[:255],
                 year=book.year,
-                author=book.author,
+                author=book.author[:255],
             )
             .returning(
                 BookTable.id,
@@ -163,9 +163,9 @@ class BookStorage:
         stmt = pg_insert(BookTable).values(
             [
                 {
-                    "title": book.title,
+                    "title": book.title[:255],
                     "year": book.year,
-                    "author": book.author,
+                    "author": book.author[:255],
                 }
                 for book in books
             ]

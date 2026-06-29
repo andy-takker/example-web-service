@@ -1,14 +1,13 @@
 from collections.abc import Sequence
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, PositiveInt
+from pydantic import PositiveInt
 
-from library.domains.entities.book import BookId
+from library.domain.entities.book import BookId
+from library.presentors.rest.schemas import BaseSchema
 
 
-class BookSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class BookSchema(BaseSchema):
     id: BookId
     title: str
     year: int
@@ -17,25 +16,18 @@ class BookSchema(BaseModel):
     updated_at: datetime
 
 
-class BookPaginationParamsSchema(BaseModel):
-    limit: PositiveInt = Field(le=100, default=10)
-    offset: int = Field(ge=0, default=0)
-
-
-class BookPaginationSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class BookPaginationSchema(BaseSchema):
     total: int
     items: Sequence[BookSchema]
 
 
-class CreateBookSchema(BaseModel):
+class CreateBookSchema(BaseSchema):
     title: str
     year: PositiveInt
     author: str
 
 
-class UpdateBookSchema(BaseModel):
+class UpdateBookSchema(BaseSchema):
     title: str | None = None
     year: int | None = None
     author: str | None = None

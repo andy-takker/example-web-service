@@ -45,7 +45,7 @@ class AsyncReducer:
     ) -> None:
         try:
             result = await coro
-        except (Exception, asyncio.CancelledError) as e:
+        except (Exception, asyncio.CancelledError) as e:  # noqa: BLE001
             future.set_exception(e)
         else:
             future.set_result(result)
@@ -72,7 +72,7 @@ class AsyncReducer:
         try:
             result = result_future.result()
             set_func = wait_future.set_result
-        except (Exception, asyncio.CancelledError) as e:
+        except (Exception, asyncio.CancelledError) as e:  # noqa: BLE001
             result = e
             set_func = wait_future.set_exception
 

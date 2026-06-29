@@ -11,7 +11,7 @@ def api_url(user_id: UUID | None = None) -> str:
     return f"/api/v1/users/{user_id}/"
 
 
-async def test_update_user_by_id__nothing_to_update__status_code(client: AsyncClient):
+async def test_update_user_by_id__empty_payload__status_code(client: AsyncClient):
     response = await client.patch(api_url())
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 

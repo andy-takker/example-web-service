@@ -3,8 +3,8 @@ import pytest
 from library.adapters.database.storages.book import BookStorage
 from library.adapters.database.storages.user import UserStorage
 from library.adapters.database.uow import SqlalchemyUow
-from library.domains.interfaces.storages.book import IBookStorage
-from library.domains.interfaces.storages.user import IUserStorage
+from library.domain.interfaces.storages.book import IBookStorage
+from library.domain.interfaces.storages.user import IUserStorage
 
 
 @pytest.fixture

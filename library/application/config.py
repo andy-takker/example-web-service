@@ -17,5 +17,11 @@ class AppConfig:
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
+class HttpConfig:
+    host: str = field(default_factory=lambda: environ.get("APP_HTTP_HOST", "0.0.0.0"))
+    port: int = field(default_factory=lambda: int(environ.get("APP_HTTP_PORT", 8080)))
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
 class SecretConfig:
     secret: str = field(default_factory=lambda: environ.get("APP_SECRET", "secret"))

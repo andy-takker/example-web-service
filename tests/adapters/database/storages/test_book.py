@@ -9,7 +9,7 @@ from library.adapters.database.storages.book import BookStorage
 from library.adapters.database.tables import BookTable
 from library.adapters.database.uow import SqlalchemyUow
 from library.application.exceptions import EntityNotFoundException
-from library.domains.entities.book import (
+from library.domain.entities.book import (
     Book,
     BookId,
     BookPaginationParams,

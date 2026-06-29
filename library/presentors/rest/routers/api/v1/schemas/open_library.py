@@ -1,19 +1,15 @@
 from collections.abc import Sequence
 
-from pydantic import BaseModel, ConfigDict
+from library.presentors.rest.schemas import BaseSchema
 
 
-class OpenLibraryBookSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class OpenLibraryBookSchema(BaseSchema):
     key: str
     title: str
     authors: Sequence[str]
 
 
-class OpenLibrarySearchSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class OpenLibrarySearchSchema(BaseSchema):
     books: Sequence[OpenLibraryBookSchema]
     total: int
     start: int

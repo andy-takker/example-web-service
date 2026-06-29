@@ -1,7 +1,7 @@
 from asyncly.srvmocker import MockService
 
 from library.adapters.open_library.client import OpenLibraryClient
-from library.domains.entities.open_library import (
+from library.domain.entities.open_library import (
     OpenLibraryBook,
     OpenLibrarySearchResult,
 )

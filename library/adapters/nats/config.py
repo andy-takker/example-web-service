@@ -19,8 +19,9 @@ class NatsConfig:
         default_factory=lambda: int(environ.get("APP_NATS_MAX_RECONNECT_ATTEMPTS", 5))
     )
     allow_reconnect: bool = field(
-        default_factory=lambda: environ.get("APP_NATS_ALLOW_RECONNECT", "true").lower()
-        == "true"
+        default_factory=lambda: (
+            environ.get("APP_NATS_ALLOW_RECONNECT", "true").lower() == "true"
+        )
     )
 
     @property

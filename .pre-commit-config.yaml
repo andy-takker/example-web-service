@@ -1,9 +1,14 @@
 default_language_version:
-  python: python3.12
+  python: python3.13
 
 repos:
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -15,15 +20,13 @@ repos:
       - id: end-of-file-fixer
         types: [python]
       - id: fix-byte-order-marker
-      - id: fix-encoding-pragma
-        args: [--remove]
       - id: mixed-line-ending
         args: [--fix=lf]
         types: [python]
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.2
+    rev: v0.15.2
     hooks:
       - id: ruff
         args: [--fix]
@@ -35,13 +38,5 @@ repos:
         name: mypy
         entry: mypy ./library/ --config-file ./pyproject.toml
         language: python
-        language_version: python3.12
         require_serial: true
         pass_filenames: false
-
-  - repo: meta
-    hooks:
-      - id: check-hooks-apply
-      - id: check-useless-excludes
-
-

@@ -14,7 +14,7 @@ services:
       - POSTGRES_DB=library
 
   broker:
-    image: bitnami/nats:2.10.18
+    image: bitnamilegacy/nats:2.10.18
     environment:
       NATS_EXTRA_ARGS: "-js --http_port 8222"
     ports:

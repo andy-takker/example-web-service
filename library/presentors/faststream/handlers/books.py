@@ -2,8 +2,8 @@ from dishka import FromDishka
 from faststream.nats import NatsRouter
 
 from library.adapters.nats.stream import STREAM
-from library.domains.entities.book import UploadBooks
-from library.domains.use_cases.commands.book.upload_books import UploadBooksCommand
+from library.domain.entities.book import UploadBooks
+from library.domain.use_cases.commands.book.upload_books import UploadBooksCommand
 from library.presentors.faststream.events.upload_books import UploadBooksEvent
 from library.presentors.faststream.subjects import BooksSubjects
 

@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 import pytest
 from faststream import FastStream
 from faststream.nats import NatsBroker, StreamConfig, TestNatsBroker
+from nats.js import JetStreamManager
 
 from library.adapters.nats.broker import create_broker
 from library.adapters.nats.config import NatsConfig
@@ -37,9 +38,10 @@ async def faststream_client(faststream_app: FastStream) -> AsyncIterator[NatsBro
 
 
 async def prepare_stream(broker: NatsBroker) -> None:
-    for stream in await broker.stream.streams_info():
-        await broker.stream.delete_stream(name=stream.config.name)
-    await broker.stream.add_stream(
+    stream_manager = JetStreamManager(broker.connection)
+    for stream in await stream_manager.streams_info():
+        await stream_manager.delete_stream(name=stream.config.name)
+    await stream_manager.add_stream(
         config=StreamConfig(
             name=STREAM.name,
             subjects=[BooksSubjects.UPLOAD_OPEN_LIBRARY],

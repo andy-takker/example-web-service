@@ -1,7 +1,7 @@
 from asyncio import gather
 
 from asyncly.srvmocker import MockService
-from asyncly.srvmocker.responses import LatencyResponse
+from asyncly.srvmocker.responses.timeout import LatencyResponse
 
 from library.adapters.open_library.cached import CachedOpenLibraryClient
 from tests.plugins.instances.open_library import OpenLibrarySearchResponse

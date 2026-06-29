@@ -1,8 +1,8 @@
 from aiocache import BaseCache
 
 from library.application.cached import ICached, cached
-from library.domains.entities.open_library import OpenLibrarySearchResult
-from library.domains.interfaces.clients.open_library import IOpenLibraryClient
+from library.domain.entities.open_library import OpenLibrarySearchResult
+from library.domain.interfaces.clients.open_library import IOpenLibraryClient
 
 
 class CachedOpenLibraryClient(ICached):
