@@ -21,13 +21,16 @@ develop-ci: ##@Develop Create virtualenv for CI
 test-ci: ##@Test Run tests with pytest and coverage in CI
 	.venv/bin/pytest ./$(TEST_FOLDER_NAME) --junitxml=./junit.xml --cov=./$(PROJECT_NAME) --cov-report=xml
 
-lint-ci: ruff mypy ##@Linting Run all linters in CI
+lint-ci: ruff mypy import-linter ##@Linting Run all linters in CI
 
 ruff: ##@Linting Run ruff
 	.venv/bin/ruff check ./$(PROJECT_NAME)
 
 mypy: ##@Linting Run mypy
 	.venv/bin/mypy --config-file ./pyproject.toml ./$(PROJECT_NAME) --enable-incomplete-feature=NewGenericSyntax
+
+import-linter: ##@Linting Run import-linter
+	.venv/bin/lint-imports
 
 alembic_init: ##@Database Run alembic init for async
 	.venv/bin/alembic init -t async ./$(PROJECT_NAME)/adapters/database/migrations

@@ -40,3 +40,11 @@ repos:
         language: python
         require_serial: true
         pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: lint_imports
+        name: "Lint imports"
+        entry: "lint-imports"
+        language: system
+        pass_filenames: false
